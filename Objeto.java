@@ -49,4 +49,9 @@ public class Objeto
 
     public String getUsuarioQueReclama() { return usuarioQueReclama; }
     public void setUsuarioQueReclama(String usuarioQueReclama) { this.usuarioQueReclama = usuarioQueReclama; }
+
+    public boolean esValido() {
+        return !(this.descripcion.isEmpty() || this.lugarEncontrado.isEmpty() || this.fechaEncontrado == null);
+    }
 }
+
