@@ -22,4 +22,31 @@ public class Objeto
         this.reportadoPor = reportadoPor;
         this.usuarioQueReclama = null; 
     }
+
+    public String getDescripcion() { return descripcion; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+
+    public String getTipo() { return tipo; }
+    public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public String getEstado() { return estado; }
+    public void setEstado(String estado) { this.estado = estado; }
+
+    public LocalDate getFechaEncontrado() { return fechaEncontrado; }
+    public void setFechaEncontrado(LocalDate fechaEncontrado) { this.fechaEncontrado = fechaEncontrado; }
+
+    public String getLugarEncontrado() { return lugarEncontrado; }
+    public void setLugarEncontrado(String lugarEncontrado) { this.lugarEncontrado = lugarEncontrado; }
+
+    public LocalDate getFechaDevolucion() { return fechaDevolucion; }
+    public void setFechaDevolucion(LocalDate fechaDevolucion) { this.fechaDevolucion = fechaDevolucion; }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
+
+    public String getReportadoPor() { return reportadoPor; }
+    public void setReportadoPor(String reportadoPor) { this.reportadoPor = reportadoPor; }
+
+    public String getUsuarioQueReclama() { return usuarioQueReclama; }
+    public void setUsuarioQueReclama(String usuarioQueReclama) { this.usuarioQueReclama = usuarioQueReclama; }
 }
