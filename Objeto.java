@@ -52,6 +52,6 @@ public class Objeto
 
     public boolean esValido() {
         return !(this.descripcion.isEmpty() || this.lugarEncontrado.isEmpty() || this.fechaEncontrado == null);
-    }
+    }    
 }
 
