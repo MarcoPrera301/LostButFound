@@ -14,37 +14,61 @@ public class VistaUsuario
         this.sc = new Scanner(System.in);
     }
 
-    public String IniciarVistaUsuario() 
+    public  IniciarVistaUsuario() 
     {
         System.out.println("====== Lost But Found - UVG ======");
         System.out.println("Bienvenido al sistema de objetos perdidos.");
-        System.out.println("Por favor, ingrese su nombre:");
-        this.nombre = sc.nextLine();
 
-        System.out.println("Ingrese su correo institucional:");
-        this.correo = sc.nextLine();
 
-        System.out.println("Ingrese su número de carnet:");
-        this.carnet = sc.nextInt();
-        sc.nextLine(); // Consumir el salto de línea
+        // System.out.println("Por favor, para hacer login, ingrese su nombre:");
+        // this.nombre = sc.nextLine();
 
-        return nombre + "," + correo + "," + carnet;
+        // System.out.println("Ingrese su correo institucional:");
+        // this.correo = sc.nextLine();
+
+        // System.out.println("Ingrese su número de carnet:");
+        // this.carnet = sc.nextInt();
+        // sc.nextLine();                   // registro de usuario pendiente
+
+
+
+
     }
 
-    public Objeto solicitarDatosObjetoEncontrado() 
+  // Metodo para solicitar datos del objeto encontrado, que sera instanciado en Sistema.java
+    public String solicitarTipoObjeto() 
+    {
+        System.out.println("Ingrese que tipo de objeto es \n(Electronico, Objeto Personal, Identificacion, etc..):");
+        String tipo = sc.nextLine();
+        return tipo;
+    }
+
+    public String solicitarDescripcion() 
     {
         System.out.println("Ingrese una descripcion del objeto perdido:");
         String descripcion = sc.nextLine();
+        return descripcion;
+    }
 
-        System.out.println("Ingrese que tipo de objeto es \n(Pachon, Carnet, Cargador, Audifonos, etc..):");
-        String tipo = sc.nextLine();
-
+    public String solicitarUbicacionObjeto() 
+    {
         System.out.println("Ingrese donde encontró el objeto:");
         String ubicacion = sc.nextLine();
+        return ubicacion;
+    }
 
+    public LocalDate solicitarFechaEncontrado() 
+    {
+        System.out.println("Ingrese la fecha en que encontró el objeto (YYYY-MM-DD):");
         LocalDate fechaEncontrado = LocalDate.parse(sc.nextLine());
+        return fechaEncontrado;
+    }
 
-        return new Objeto(descripcion, "Encontrado", tipo , fechaEncontrado , ubicacion, this.generarIdObjeto(), nombre);
+    public String solicitarNombreObjeto() 
+    {
+        System.out.println("Ingrese el nombre del objeto:");
+        String nombre = sc.nextLine();
+        return nombre;
     }
 
     public int generarIdObjeto() 

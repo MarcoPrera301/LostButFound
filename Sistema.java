@@ -13,6 +13,15 @@ public class Sistema {
     public Sistema() 
     {
         listaObjetos = new ArrayList<>();
+        listaUsuarios = new ArrayList<>();
+        listaPremios = new ArrayList<>();   
+        listaAdministradores = new ArrayList<>();
+        vistaUsuario = new VistaUsuario();
+    }
+
+    public void iniciarSistema() 
+    {
+        vistaUsuario.IniciarVistaUsuario();
     }
 
     public boolean registrarObjeto(Objeto objeto) 
@@ -40,13 +49,16 @@ public class Sistema {
         listaAdministradores.add(administrador);
     }
 
-    public void registrarObjetoEncontrado() 
+    public String registrarObjetoEncontrado() 
     {
-        Objeto objeto = vistaUsuario.solicitarDatosObjetoEncontrado();
-        if (registrarObjeto(objeto)) {
-            System.out.println("Objeto registrado exitosamente.");
-        } else {
-            System.out.println("Error al registrar el objeto. Por favor, intente de nuevo.");
+        Objeto objeto = new Objeto(vistaUsuario.solicitarDescripcion(), vistaUsuario.solicitarTipoObjeto(), "Encontrado", vistaUsuario.solicitarFechaEncontrado(),vistaUsuario.solicitarUbicacionObjeto(),vistaUsuario.siguienteIdObjeto(),"UsuarioX"); // Reportado por usuario ficticio
+        if (registrarObjeto(objeto)) 
+        {
+            return "Objeto registrado exitosamente.";
+        } 
+        else 
+        {
+            return "Error al registrar el objeto. Por favor, intente de nuevo.";
         }
     }
 }
