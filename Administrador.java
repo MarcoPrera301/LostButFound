@@ -18,3 +18,11 @@ public class Administrador
         if (v.contains(",") || v.contains("\"") || v.contains("\n")) return "\"" + v + "\"";
         return v;
     }
+    private static String unesc(String s) {
+        if (s == null) return "";
+        String t = s;
+        if (t.startsWith("\"") && t.endsWith("\"") && t.length() >= 2) {
+            t = t.substring(1, t.length() - 1).replace("\"\"", "\"");
+        }
+        return t;
+    }
