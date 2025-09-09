@@ -41,3 +41,10 @@ public class Administrador
         while (idx < cols) out[idx++] = "";
         return out;
     }
+    public String toCsv() { return String.join(",", esc(nombre), esc(adminId), "true"); }
+    public static String csvHeader() { return "nombre,adminId,permiso"; }
+    public static Administrador fromCsv(String line) {
+        String[] p = splitCsv(line, 3);
+        return new Administrador(unesc(p[0]), unesc(p[1]));
+    }
+}
