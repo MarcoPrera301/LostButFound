@@ -4,6 +4,7 @@ public class VistaUsuario
 {
     private final Scanner sc;
     private int siguienteIdObjeto = 1;
+
     private String nombre;
     private String correo;
     private int carnet;
@@ -13,11 +14,34 @@ public class VistaUsuario
         this.sc = new Scanner(System.in);
     }
 
-    // Firma correcta: void
     public void IniciarVistaUsuario() 
     {
         System.out.println("====== Lost But Found - UVG ======");
         System.out.println("Bienvenido al sistema de objetos perdidos.");
+        // Aquí puedes mostrar menús o instrucciones iniciales
+    }
+
+    // ----- Login -----
+
+    public String solicitarCorreo() {
+        System.out.print("Correo: ");
+        return sc.nextLine().trim();
+    }
+
+    public String solicitarContrasena() {
+        System.out.print("Contraseña: ");
+        return sc.nextLine();
+    }
+
+    /** Pide credenciales y autentica contra el CSV usando Sistema */
+    public void mostrarLoginConsola(Sistema sistema) {
+        String correo = solicitarCorreo();
+        String contrasena = solicitarContrasena();
+
+        sistema.autenticarUsuarioCSV(correo, contrasena).ifPresentOrElse(
+            u -> System.out.println("✅ Bienvenido, " + u.getNombre() + " (" + u.getRol() + ")"),
+            () -> System.out.println("❌ Credenciales inválidas.")
+        );
     }
 
     // ----- Solicitud de datos para crear Objeto -----
@@ -40,7 +64,6 @@ public class VistaUsuario
         return sc.nextLine();
     }
 
-    // Fecha como String (evitamos LocalDate/LocalDateTime)
     public String solicitarFechaEncontrado() 
     {
         System.out.println("Ingrese la fecha en que encontró el objeto (YYYY-MM-DD):");
