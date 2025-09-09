@@ -44,6 +44,24 @@ public class VistaUsuario
         );
     }
 
+    // ----- Semilla de admin (ejecutar una vez) -----
+    public void registrarUsuarioDemoUnaVez(Sistema sistema) {
+        boolean ok = sistema.insertarUsuarioCSV("Admin", "admin@uvg.edu", "1234", "ADMIN");
+        System.out.println(ok ? "Usuario de prueba creado." : "No se creó (¿correo duplicado?)");
+    }
+
+    // ----- MAIN de prueba (opcional) -----
+    public static void main(String[] args) {
+        Sistema s = new Sistema();
+        VistaUsuario v = new VistaUsuario();
+
+        // 1) Ejecuta UNA vez para crear el admin, luego comenta esta línea:
+        // v.registrarUsuarioDemoUnaVez(s);
+
+        // 2) Probar login:
+        v.mostrarLoginConsola(s);
+    }
+
     // ----- Solicitud de datos para crear Objeto -----
 
     public String solicitarTipoObjeto() 
