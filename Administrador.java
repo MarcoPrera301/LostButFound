@@ -11,3 +11,10 @@ public class Administrador
     public String getNombre() { return nombre; }
     public String getAdminId() { return adminId; }
     public boolean getPermiso() { return permiso; }
+
+    private static String esc(String s) {
+        if (s == null) return "";
+        String v = s.replace("\"", "\"\"");
+        if (v.contains(",") || v.contains("\"") || v.contains("\n")) return "\"" + v + "\"";
+        return v;
+    }
