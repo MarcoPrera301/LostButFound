@@ -8,3 +8,6 @@ public class Administrador
         this.adminId = adminId;
         this.permiso = true;
     }
+    public String getNombre() { return nombre; }
+    public String getAdminId() { return adminId; }
+    public boolean getPermiso() { return permiso; }
