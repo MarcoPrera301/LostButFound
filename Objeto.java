@@ -8,11 +8,11 @@ public class Objeto
     private LocalDate fechaEncontrado;  
     private String lugarEncontrado;
     private LocalDate fechaDevolucion;  
-    private int id;
+    private String id;
     private String reportadoPor;
     private String usuarioQueReclama;
 
-    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, int id, String reportadoPor) {
+    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, String id, String reportadoPor) {
         this.descripcion = descripcion;
         this.tipo = tipo;
         this.estado = estado;
@@ -22,6 +22,16 @@ public class Objeto
         this.reportadoPor = reportadoPor;
         this.usuarioQueReclama = null; 
     }
+
+    public static Objeto nuevoPerdido(String id, String descripcion, String tipo, String reportadoPor) {
+        return new Objeto(descripcion, tipo, "perdido", null, "", id, reportadoPor); 
+    }
+
+    public static Objeto nuevoEncontrado(String id, String descripcion, String tipo,
+        LocalDate fechaEncontrado, String lugarEncontrado, String reportadoPor) {
+    return new Objeto(descripcion, tipo, "encontrado", fechaEncontrado, lugarEncontrado, id, reportadoPor); 
+    }
+
 
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
@@ -41,8 +51,8 @@ public class Objeto
     public LocalDate getFechaDevolucion() { return fechaDevolucion; }
     public void setFechaDevolucion(LocalDate fechaDevolucion) { this.fechaDevolucion = fechaDevolucion; }
 
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getReportadoPor() { return reportadoPor; }
     public void setReportadoPor(String reportadoPor) { this.reportadoPor = reportadoPor; }
@@ -53,5 +63,11 @@ public class Objeto
     public boolean esValido() {
         return !(this.descripcion.isEmpty() || this.lugarEncontrado.isEmpty() || this.fechaEncontrado == null);
     }    
+
+
+    public void setEstadoRecuperado(LocalDate fecha) { 
+        this.estado = "recuperado"; 
+        this.fechaDevolucion = fecha; 
+    }
 }
 
