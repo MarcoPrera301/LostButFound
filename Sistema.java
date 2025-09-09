@@ -15,26 +15,28 @@ public class Sistema {
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
 
+    // CSV de usuarios
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
 
-    public Sistema() 
-    {
+    public Sistema() {
         listaObjetos = new ArrayList<>();
         listaUsuarios = new ArrayList<>();
-        listaPremios = new ArrayList<>();   
+        listaPremios = new ArrayList<>();
         listaAdministradores = new ArrayList<>();
         vistaUsuario = new VistaUsuario();
 
+        // Preparar “BD” CSV
         asegurarCSVUsuariosConCabecera();
     }
 
-    public void iniciarSistema() 
-    {
+    public void iniciarSistema() {
         vistaUsuario.IniciarVistaUsuario();
+        // Si no hay usuarios, crea un admin por defecto y luego entra a login
+        crearAdminPorDefectoSiVacio();
+        vistaUsuario.mostrarLoginConsola(this);
     }
 
-    public boolean registrarObjeto(Objeto objeto) 
-    {
+    public boolean registrarObjeto(Objeto objeto) {
         if (objeto.esValido()) {
             listaObjetos.add(objeto);
             return true;
@@ -42,9 +44,8 @@ public class Sistema {
         return false;
     }
 
-    // ====== persistir primero CSV y luego memoria ======
-    public void registrarUsuario(Usuario usuario) 
-    {
+    // Persistir primero en CSV y luego a memoria
+    public void registrarUsuario(Usuario usuario) {
         boolean ok = insertarUsuarioCSV(
             usuario.getNombre(),
             usuario.getCorreo(),
@@ -60,18 +61,15 @@ public class Sistema {
         }
     }
 
-    public void registrarPremio(Premio premio) 
-    {
+    public void registrarPremio(Premio premio) {
         listaPremios.add(premio);
     }
 
-    public void registrarAdministrador(Administrador administrador) 
-    {
+    public void registrarAdministrador(Administrador administrador) {
         listaAdministradores.add(administrador);
     }
 
-    public String registrarObjetoEncontrado() 
-    {
+    public String registrarObjetoEncontrado() {
         Objeto objeto = new Objeto(
             vistaUsuario.solicitarDescripcion(),
             vistaUsuario.solicitarTipoObjeto(),
@@ -81,17 +79,15 @@ public class Sistema {
             vistaUsuario.siguienteIdObjeto(),
             "UsuarioX"
         );
-        if (registrarObjeto(objeto)) 
-        {
+
+        if (registrarObjeto(objeto)) {
             return "Objeto registrado exitosamente.";
-        } 
-        else 
-        {
+        } else {
             return "Error al registrar el objeto. Por favor, intente de nuevo.";
         }
     }
 
-    // ================== Preparación CSV ==================
+    // ================== CSV: preparación ==================
     private void asegurarCSVUsuariosConCabecera() {
         try {
             Files.createDirectories(rutaCSVUsuarios.getParent());
@@ -111,7 +107,7 @@ public class Sistema {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
     }
 
-    // ================== NUEVO: Integración CSV ==================
+    // ================== CSV: integración ==================
 
     // Buscar por correo (para login y unicidad)
     public Optional<Usuario> buscarUsuarioPorCorreoCSV(String correoBuscado) {
@@ -176,7 +172,7 @@ public class Sistema {
                 String.valueOf(id),
                 nombre.trim(),
                 correo.trim(),
-                contrasena,       // (en prod: guardar hash)
+                contrasena,       // en producción: guardar hash
                 rol.trim(),
                 hoy()
         );
@@ -200,5 +196,32 @@ public class Sistema {
             return u;
         }
         return Optional.empty();
+    }
+
+    // ================== CSV: utilidades de arranque ==================
+
+    // ¿Hay al menos un usuario (además de la cabecera)?
+    private boolean hayUsuariosCSV() {
+        try (BufferedReader br = Files.newBufferedReader(rutaCSVUsuarios, StandardCharsets.UTF_8)) {
+            String linea = br.readLine(); // cabecera
+            while ((linea = br.readLine()) != null) {
+                if (!linea.isBlank()) return true;
+            }
+        } catch (IOException e) {
+            System.err.println("Error verificando usuarios CSV: " + e.getMessage());
+        }
+        return false;
+    }
+
+    // Crear admin por defecto si el CSV está vacío
+    private void crearAdminPorDefectoSiVacio() {
+        if (!hayUsuariosCSV()) {
+            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu", "1234", "ADMIN");
+            if (ok) {
+                System.out.println("✔ Admin por defecto creado: admin@uvg.edu / 1234");
+            } else {
+                System.err.println("✖ No se pudo crear el admin por defecto.");
+            }
+        }
     }
 }
