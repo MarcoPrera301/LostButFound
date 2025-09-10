@@ -81,18 +81,33 @@ public boolean esValido() {
         return false;
     }
 
-        return switch (estado) {
-            case ESTADO_PERDIDO -> reportadoPor != null && !reportadoPor.isEmpty();
-            case ESTADO_ENCONTRADO -> fechaEncontrado != null
-                && lugarEncontrado != null && !lugarEncontrado.isEmpty()
-                && reportadoPor != null && !reportadoPor.isEmpty();
-            case ESTADO_RECUPERADO -> fechaDevolucion != null
-                && usuarioQueReclama != null && !usuarioQueReclama.isEmpty();
-            case ESTADO_DONADO -> true;
-            default -> false;
-        };
+    return switch (estado) {
+        case ESTADO_PERDIDO -> reportadoPor != null && !reportadoPor.isEmpty();
+        case ESTADO_ENCONTRADO -> fechaEncontrado != null
+            && lugarEncontrado != null && !lugarEncontrado.isEmpty()
+            && reportadoPor != null && !reportadoPor.isEmpty();
+        case ESTADO_RECUPERADO -> fechaDevolucion != null
+            && usuarioQueReclama != null && !usuarioQueReclama.isEmpty();
+        case ESTADO_DONADO -> true;
+        default -> false;
+    };
 }
- 
+
+public void setEstadoDonado(LocalDate fechaDonacion) {
+    this.estado = ESTADO_DONADO;
+    this.fechaDevolucion = fechaDonacion;
+}
+
+public int diasDesdeEncontrado() {
+    if (this.fechaEncontrado == null) return -1;
+    return (int) java.time.temporal.ChronoUnit.DAYS.between(this.fechaEncontrado, LocalDate.now());
+}
+
+public boolean esCandidatoNoReclamado(int limiteDias) {
+    return ESTADO_ENCONTRADO.equals(this.estado)
+        && this.fechaEncontrado != null
+        && diasDesdeEncontrado() > limiteDias;
+}
 
 
     /** @deprecated Usa {@link #setEstadoRecuperado(LocalDate, String)} para registrar fecha y usuario. */
