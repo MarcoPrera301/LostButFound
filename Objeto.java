@@ -31,12 +31,18 @@ private String usuarioQueReclama;
     }
 
     public static Objeto nuevoPerdido(String id, String descripcion, String tipo, String reportadoPor) {
-        return new Objeto(descripcion, tipo, "perdido", null, "", id, reportadoPor); 
+        return new Objeto(descripcion, tipo, ESTADO_PERDIDO, null, "", id, reportadoPor);
     }
 
     public static Objeto nuevoEncontrado(String id, String descripcion, String tipo,
-        LocalDate fechaEncontrado, String lugarEncontrado, String reportadoPor) {
-    return new Objeto(descripcion, tipo, "encontrado", fechaEncontrado, lugarEncontrado, id, reportadoPor); 
+            LocalDate fechaEncontrado, String lugarEncontrado, String reportadoPor) {
+        return new Objeto(descripcion, tipo, ESTADO_ENCONTRADO, fechaEncontrado, lugarEncontrado, id, reportadoPor);
+    }
+
+    public void setEstadoRecuperado(LocalDate fecha, String usuarioQueReclama) { 
+        this.estado = ESTADO_RECUPERADO; 
+        this.fechaDevolucion = fecha; 
+        this.usuarioQueReclama = usuarioQueReclama;
     }
 
 
@@ -72,8 +78,10 @@ private String usuarioQueReclama;
     }    
 
 
+    /** @deprecated Usa {@link #setEstadoRecuperado(LocalDate, String)} para registrar fecha y usuario. */
+    @Deprecated
     public void setEstadoRecuperado(LocalDate fecha) { 
-        this.estado = "recuperado"; 
+        this.estado = ESTADO_RECUPERADO; 
         this.fechaDevolucion = fecha; 
     }
 }
