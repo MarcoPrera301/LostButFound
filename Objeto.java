@@ -73,9 +73,26 @@ private String usuarioQueReclama;
     public String getUsuarioQueReclama() { return usuarioQueReclama; }
     public void setUsuarioQueReclama(String usuarioQueReclama) { this.usuarioQueReclama = usuarioQueReclama; }
 
-    public boolean esValido() {
-        return !(this.descripcion.isEmpty() || this.lugarEncontrado.isEmpty() || this.fechaEncontrado == null);
-    }    
+public boolean esValido() {
+    if (id == null || id.isEmpty()
+     || descripcion == null || descripcion.isEmpty()
+     || tipo == null || tipo.isEmpty()
+     || estado == null || estado.isEmpty()) {
+        return false;
+    }
+
+        return switch (estado) {
+            case ESTADO_PERDIDO -> reportadoPor != null && !reportadoPor.isEmpty();
+            case ESTADO_ENCONTRADO -> fechaEncontrado != null
+                && lugarEncontrado != null && !lugarEncontrado.isEmpty()
+                && reportadoPor != null && !reportadoPor.isEmpty();
+            case ESTADO_RECUPERADO -> fechaDevolucion != null
+                && usuarioQueReclama != null && !usuarioQueReclama.isEmpty();
+            case ESTADO_DONADO -> true;
+            default -> false;
+        };
+}
+ 
 
 
     /** @deprecated Usa {@link #setEstadoRecuperado(LocalDate, String)} para registrar fecha y usuario. */
