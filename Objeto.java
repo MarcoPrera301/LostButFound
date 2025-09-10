@@ -2,17 +2,24 @@ import java.time.LocalDate;
 
 public class Objeto 
 {
-    private String descripcion;
-    private String tipo;
-    private String estado;
-    private LocalDate fechaEncontrado;  
-    private String lugarEncontrado;
-    private LocalDate fechaDevolucion;  
-    private String id;
-    private String reportadoPor;
-    private String usuarioQueReclama;
+    public static final String ESTADO_PERDIDO    = "perdido";
+    public static final String ESTADO_ENCONTRADO = "encontrado";
+    public static final String ESTADO_RECUPERADO = "recuperado";
+    public static final String ESTADO_DONADO     = "donado";
 
-    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, String id, String reportadoPor) {
+
+private String descripcion;
+private String tipo;
+private String estado;
+private LocalDate fechaEncontrado;  
+private String lugarEncontrado;
+private LocalDate fechaDevolucion;  
+private String id;
+private String reportadoPor;
+private String usuarioQueReclama;
+
+    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, String id, String reportadoPor) 
+    {
         this.descripcion = descripcion;
         this.tipo = tipo;
         this.estado = estado;
