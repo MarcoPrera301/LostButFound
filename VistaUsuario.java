@@ -39,8 +39,8 @@ public class VistaUsuario
         String contrasena = solicitarContrasena();
 
         sistema.autenticarUsuarioCSV(correo, contrasena).ifPresentOrElse(
-            u -> System.out.println("✅ Bienvenido, " + u.getNombre() + " (" + u.getRol() + ")"),
-            () -> System.out.println("❌ Credenciales inválidas.")
+            u -> System.out.println("Bienvenido, " + u.getNombre() + " (" + u.getRol() + ")"),
+            () -> System.out.println("Credenciales inválidas.")
         );
     }
 
