@@ -33,7 +33,22 @@ public class Sistema {
         vistaUsuario.IniciarVistaUsuario();
         // Si no hay usuarios, crea un admin por defecto y luego entra a login
         crearAdminPorDefectoSiVacio();
-        vistaUsuario.mostrarLoginConsola(this);
+        boolean login = vistaUsuario.mostrarLoginConsola(this);
+        boolean cierre = false;
+
+        while (!cierre) 
+        {
+        if (login) 
+            {
+                int opcion = vistaUsuario.verMenu();
+
+                if(opcion==6)  
+                { 
+                    cierre = true;
+                    System.out.println("Saliendo del sistema. ¡Hasta luego!");
+                } 
+            }
+        }
     }
 
     public boolean registrarObjeto(Objeto objeto) {
@@ -69,15 +84,15 @@ public class Sistema {
         listaAdministradores.add(administrador);
     }
 
-    public String registrarObjetoEncontrado() {
+    public String registrarObjeto() {
         Objeto objeto = new Objeto(
             vistaUsuario.solicitarDescripcion(),
             vistaUsuario.solicitarTipoObjeto(),
-            "Encontrado",
+            vistaUsuario.estadoObjeto(),
             vistaUsuario.solicitarFechaEncontrado(),
             vistaUsuario.solicitarUbicacionObjeto(),
             vistaUsuario.siguienteIdObjeto(),
-            "UsuarioX"
+            vistaUsuario.getCorreo()
         );
 
         if (registrarObjeto(objeto)) {
@@ -190,7 +205,7 @@ public class Sistema {
     }
 
     // Autenticación básica (texto plano)
-    public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) {
+    public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) { //cambia a un if else normal
         Optional<Usuario> u = buscarUsuarioPorCorreoCSV(correo);
         if (u.isPresent() && u.get().getContrasena().equals(contrasenaPlano)) {
             return u;
