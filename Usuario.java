@@ -75,5 +75,30 @@ public class Usuario {
         return out;
     }
 
+    //Conversión a CSV
+    public String toCsv() {                                                       // ⭐ agregado
+        return String.join(",",
+                Integer.toString(idUsuario),
+                esc(nombre), esc(correoInstitucional),
+                esc(contrasena), esc(rol),
+                Integer.toString(carnet), Integer.toString(puntos),
+                Boolean.toString(permiso));
+    }
+
+    public static String csvHeader() {                                            // ⭐ agregado
+        return "idUsuario,nombre,correo,contrasena,rol,carnet,puntos,permiso";
+    }
+
+    public static Usuario fromCsv(String line) {                                  // ⭐ agregado
+        String[] p = splitCsv(line, 8);
+        Usuario u = new Usuario(
+                Integer.parseInt(p[0]),
+                unesc(p[1]), unesc(p[2]), unesc(p[3]), unesc(p[4]));
+        u.setCarnet(Integer.parseInt(p[5]));
+        u.sumarPuntos(Integer.parseInt(p[6])); // inicia puntos
+        u.setPermiso(Boolean.parseBoolean(p[7]));
+        return u;
+    }
+
 
 }
