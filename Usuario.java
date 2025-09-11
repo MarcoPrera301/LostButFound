@@ -1,14 +1,13 @@
 import java.util.ArrayList;
 
 public class Usuario {
-    // --- mínimos para autenticación CSV ---
+
     private final int idUsuario;
     private String nombre;
     private String correoInstitucional;
     private String contrasena;
     private String rol;
 
-    // --- tus campos existentes ---
     private int carnet;
     private int puntos;
     private ArrayList<RegistroObjetos> historialAcciones;
@@ -22,7 +21,6 @@ public class Usuario {
         this.contrasena = contrasena;
         this.rol = rol;
 
-        // ✅ Inicializaciones seguras 
         this.historialAcciones = new ArrayList<>();
         this.premioReclamado   = new ArrayList<>();
     }
@@ -32,4 +30,16 @@ public class Usuario {
     public String getCorreo() { return correoInstitucional; }
     public String getContrasena() { return contrasena; }
     public String getRol() { return rol; }
+    public int getCarnet() { return carnet; }
+    public int getPuntos() { return puntos; }     
+    public boolean getPermiso() { return permiso; }
+    
+    public void setNombre(String nombre) { this.nombre = nombre; }      
+    public void setCorreo(String correo) { this.correoInstitucional = correo; } 
+    public void setContrasena(String contrasena) { this.contrasena = contrasena; } 
+    public void setRol(String rol) { this.rol = rol; }                        
+    public void setCarnet(int carnet) { this.carnet = carnet; }                 
+    public void setPermiso(boolean permiso) { this.permiso = permiso; }          
+
+
 }
