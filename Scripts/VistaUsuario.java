@@ -43,6 +43,61 @@ public class VistaUsuario
         return opcion;
     }
 
+    // filtros 
+    public void verFiltros() 
+    {
+        System.out.println("\n--- Filtros de Búsqueda de Objetos Encontrados ---");
+        System.out.println("1. Filtrar por tipo de objeto");
+        System.out.println("2. Filtrar por fecha de reporte");
+        System.out.println("3. Filtrar por ubicacion");
+        System.out.println("4. Volver al menú principal");
+        System.out.print("Seleccione una opción: ");
+        
+        int opcion = sc.nextInt();
+        sc.nextLine(); // Limpiar el buffer
+
+        switch (opcion) {
+            case 1:
+                String tipo = filtroTipo();
+                // Aquí iría la lógica para filtrar por tipo
+                break;
+            case 2:
+                LocalDate fecha = filtroFecha();
+                // Aquí iría la lógica para filtrar por fecha
+                break;
+            case 3:
+                String ubicacion = filtroUbicacion();
+                // Aquí iría la lógica para filtrar por ubicación
+            case 4:
+                System.out.println("Volviendo al menú principal...");
+                return;
+            default:
+                System.out.println("Opción no válida. Intente de nuevo.");
+                break;
+        }
+    }
+
+    public String filtroTipo() 
+    {
+        System.out.println("Ingrese el tipo de objeto a buscar (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros):");
+        String tipo = sc.nextLine().toLowerCase();
+        return tipo;
+    }
+
+    public LocalDate filtroFecha() 
+    {
+        System.out.println("Ingrese la fecha de reporte (YYYY-MM-DD):");
+        String fechaStr = sc.nextLine();
+        return LocalDate.parse(fechaStr);
+    }
+
+    public String filtroUbicacion() 
+    {
+        System.out.println("Ingrese la ubicación donde se encontró el objeto: (CIT-618, Biblioteca, Edificio H, etc)");
+        String ubicacion = sc.nextLine().toLowerCase();
+        return ubicacion;
+    }
+
     // ----- Login -----
 
     public String solicitarCorreo() {
@@ -84,15 +139,15 @@ public class VistaUsuario
 
     public String solicitarTipoObjeto() 
     {
-        System.out.println("Ingrese qué tipo de objeto es (Electrónico, Personal, Identificación, etc.):");
-        return sc.nextLine();
+        System.out.println("Ingrese qué tipo de objeto es (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros):");
+        return sc.nextLine().toLowerCase();
     }
 
 
 
     public String solicitarDescripcion() 
     {
-        System.out.println("Ingrese una descripción del objeto perdido:");
+        System.out.println("Ingrese una descripción del objeto perdido/encontrado:");
         return sc.nextLine();
     }
 

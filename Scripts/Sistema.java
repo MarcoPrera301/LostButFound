@@ -42,7 +42,22 @@ public class Sistema {
             {
                 int opcion = vistaUsuario.verMenu();
 
-                if(opcion==6)  
+                if(opcion==1)  
+                {
+                    String resultado = registrarObjeto1();
+                    System.out.println(resultado);
+                }
+                else if(opcion==2)  
+                {
+                    vistaUsuario.verFiltros();
+                }
+                else if(opcion==3)  
+                {}
+                else if(opcion==4)  
+                {}
+                else if(opcion==5)  
+                {}
+                else if(opcion==6)
                 { 
                     cierre = true;
                     System.out.println("Saliendo del sistema. ¡Hasta luego!");
@@ -84,7 +99,7 @@ public class Sistema {
         listaAdministradores.add(administrador);
     }
 
-    public String registrarObjeto() {
+    public String registrarObjeto1() {
         Objeto objeto = new Objeto(
             vistaUsuario.solicitarDescripcion(),
             vistaUsuario.solicitarTipoObjeto(),
