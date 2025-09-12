@@ -799,4 +799,43 @@ public void canjearPremio(Usuario usuario) {
     public int donarNoReclamadosSemestre(Usuario actor) {
         return donarNoReclamados(LIMITE_DIAS_NO_RECLAMADO, actor);
     }
+
+        private boolean reescribirObjetosCSV() {
+        Path p = rutaCSVObjetos;
+        String header = "id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama";
+        StringBuilder sb = new StringBuilder(header).append("\n");
+        if (listaObjetos != null) {
+            for (Objeto o : listaObjetos) {
+                if (o == null) continue;
+                String id              = String.valueOf(o.getId());
+                String descripcion     = esc(o.getDescripcion());
+                String tipo            = esc(o.getTipo());
+                String estado          = esc(o.getEstado());
+                String fechaEncontrado = esc(fechaStr(o.getFechaEncontrado()));
+                String lugar           = esc(o.getLugarEncontrado());
+                String fechaDev        = esc(fechaStr(o.getFechaDevolucion()));
+                String reportadoPor    = esc(o.getReportadoPor());
+                String usuarioReclama  = esc(o.getUsuarioQueReclama());
+
+                sb.append(id).append(",")
+                  .append(descripcion).append(",")
+                  .append(tipo).append(",")
+                  .append(estado).append(",")
+                  .append(fechaEncontrado).append(",")
+                  .append(lugar).append(",")
+                  .append(fechaDev).append(",")
+                  .append(reportadoPor).append(",")
+                  .append(usuarioReclama).append("\n");
+            }
+        }
+        try {
+            Files.createDirectories(p.getParent());
+            Files.write(p, sb.toString().getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error reescribiendo objetos.csv: " + e.getMessage());
+            return false;
+        }
+    }
 }
