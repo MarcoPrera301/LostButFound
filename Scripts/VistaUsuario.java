@@ -228,4 +228,23 @@ public class VistaUsuario
         }
     }
 
+
+public void mostrarPremiosDisponibles(List<Premio> premios) {
+    System.out.println("\n--- Premios Disponibles ---");
+    if (premios.isEmpty()) {
+        System.out.println("No hay premios registrados en el sistema.");
+        return;
+    }
+    for (int i = 0; i < premios.size(); i++) {
+        Premio p = premios.get(i);
+        System.out.println((i + 1) + ". " + p.getNombre() + " - " + p.getDescripcion() + " (" + p.getPuntos() + " pts)");
+    }
+}
+
+public int elegirPremio() {
+    System.out.print("Seleccione el número del premio a canjear: ");
+    int opcion = sc.nextInt();
+    sc.nextLine();
+    return opcion;
+}
 }

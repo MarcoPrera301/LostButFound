@@ -78,7 +78,14 @@ public class Sistema {
                 else if(opcion==3)  
                 {}
                 else if(opcion==4)  
-                {}
+                {
+                    Optional<Usuario> usuarioOpt = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
+                    if (usuarioOpt.isPresent()) {
+                        canjearPremio(usuarioOpt.get());
+                    } else {
+                        System.out.println("Error: no se encontró el usuario en sesión.");
+                    }
+                }
                 else if(opcion==5)  
                 {}
                 else if(opcion==6)
@@ -408,4 +415,31 @@ public class Sistema {
         System.out.println("Objeto reclamado exitosamente por " + solicitante.getCorreo());
         return true;
     }    
+
+
+//Metodo para canjear premios
+public void canjearPremio(Usuario usuario) {
+    if (listaPremios.isEmpty()) {
+        System.out.println("No hay premios disponibles para canjear.");
+        return;
+    }
+
+    vistaUsuario.mostrarPremiosDisponibles(listaPremios);
+    int opcion = vistaUsuario.elegirPremio();
+
+    if (opcion < 1 || opcion > listaPremios.size()) {
+        System.out.println("Opción inválida.");
+        return;
+    }
+
+    Premio premioSeleccionado = listaPremios.get(opcion - 1);
+
+    if (usuario.getPuntos() >= premioSeleccionado.getPuntos()) {
+        usuario.restarPuntos(premioSeleccionado.getPuntos());
+        usuario.agregarPremio(premioSeleccionado);
+        System.out.println("¡Canje exitoso! Has obtenido: " + premioSeleccionado.getNombre());
+    } else {
+        System.out.println("No tienes suficientes puntos para este premio.");
+    }
+}
 }
