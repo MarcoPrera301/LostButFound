@@ -321,7 +321,7 @@ public class VistaUsuario
         }
 
         if (usuario.esAdmin()) {
-            System.out.println("⚡ Tienes permisos de administrador.");
+            System.out.println("Tienes permisos de administrador.");
         }
     }
 }
