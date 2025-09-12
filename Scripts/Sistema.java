@@ -14,6 +14,7 @@ public class Sistema {
     private List<Premio> listaPremios;
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
+    private Usuario usuarioActual;
 
     public static final String ROL_ADMIN = "ADMIN";
     public static final String ROL_ESTUDIANTE = "ESTUDIANTE";
@@ -23,6 +24,20 @@ public class Sistema {
     public static final String ACCION_GESTION_OBJETOS = "GESTION_OBJETOS";
     public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
     public static final String ACCION_REPORTES         = "REPORTES";
+    public static final String ACCION_ELIMINAR_OBJETOS = "ELIMINAR_OBJETOS";
+    public static final String ACCION_ASIGNAR_ROLES   = "ASIGNAR_ROLES";
+
+    public Usuario getUsuarioActual() {
+        return this.usuarioActual;
+    }
+
+    public void setUsuarioActual(Usuario u) {
+        this.usuarioActual = u;
+    }
+
+    public boolean esAdminSesion() {
+        return this.usuarioActual != null && this.usuarioActual.esAdmin();
+    }
 
     public boolean tienePermiso(Usuario u, String accion) {
         if (u == null || accion == null) return false;
@@ -138,11 +153,19 @@ public class Sistema {
                 {}
                 else if(opcion==6)  
                 {
-                    vistaUsuario.eliminarObjetoUI();
+                    if (!tienePermiso(usuarioActual, ACCION_ELIMINAR_OBJETOS)) {
+                        System.out.println("No tienes permiso para eliminar objetos.");
+                    } else {
+                        vistaUsuario.eliminarObjetoUI();
+                    }
                 }
                 else if(opcion==7)  
                 {
-                    vistaUsuario.asignarRolUI();
+                    if (!tienePermiso(usuarioActual, ACCION_ASIGNAR_ROLES)) {
+                        System.out.println("No tienes permiso para asignar roles.");
+                    } else {
+                        vistaUsuario.asignarRolUI();
+                    }
                 }
                 else if(opcion==8)
                 { 
@@ -679,64 +702,39 @@ public void canjearPremio(Usuario usuario) {
         return copia;
     }
 
-    public boolean esAdminSesion() {
-        try {
-            java.lang.reflect.Field f = this.getClass().getDeclaredField("usuarioActual");
-            f.setAccessible(true);
-            Object v = f.get(this);
-            if (v instanceof Usuario) {
-                Usuario u = (Usuario) v;
-                return u != null && u.esAdmin();
-            }
-        } catch (Exception ignore) {}
-        return false;
-    }
-
     public boolean eliminarObjetoPorId(int idObjeto) {
-    Usuario enSesion = null;
-    try {
-        java.lang.reflect.Field f = this.getClass().getDeclaredField("usuarioActual");
-        f.setAccessible(true);
-        Object v = f.get(this);
-        if (v instanceof Usuario) enSesion = (Usuario) v;
-    } catch (Exception ignore) {}
+        Usuario enSesion = getUsuarioActual();
+        if (!tienePermiso(enSesion, ACCION_GESTION_OBJETOS)) {
+            System.out.println("No tienes permiso para eliminar objetos.");
+            return false;
+        }
 
-    if (!tienePermiso(enSesion, ACCION_GESTION_OBJETOS)) {
-        System.out.println("No tienes permiso para eliminar objetos.");
+        java.util.Iterator<Objeto> it = listaObjetos.iterator();
+        while (it.hasNext()) {
+            Objeto o = it.next();
+            try {
+
+                java.lang.reflect.Field fid = o.getClass().getDeclaredField("id");
+                fid.setAccessible(true);
+                Object val = fid.get(o);
+                if (val instanceof Integer && ((Integer) val) == idObjeto) {
+                    it.remove();
+                    System.out.println("Objeto eliminado: " + idObjeto);
+                    return true;
+                }
+            } catch (Exception ignore) {}
+        }
+
+        System.out.println("No se encontró el objeto con id: " + idObjeto);
         return false;
-    }
-
-    java.util.Iterator<Objeto> it = listaObjetos.iterator();
-    while (it.hasNext()) {
-        Objeto o = it.next();
-        try {
-            java.lang.reflect.Field fid = o.getClass().getDeclaredField("id");
-            fid.setAccessible(true);
-            Object val = fid.get(o);
-            if (val instanceof Integer && ((Integer) val) == idObjeto) {
-                it.remove();
-                System.out.println("Objeto eliminado: " + idObjeto);
-                return true;
-            }
-        } catch (Exception ignore) {}
-    }
-    System.out.println("No se encontró el objeto con id: " + idObjeto);
-    return false;
     }
 
     public boolean asignarRolAUsuario(String correo, String nuevoRol) {
-    Usuario enSesion = null;
-    try {
-        java.lang.reflect.Field f = this.getClass().getDeclaredField("usuarioActual");
-        f.setAccessible(true);
-        Object v = f.get(this);
-        if (v instanceof Usuario) enSesion = (Usuario) v;
-    } catch (Exception ignore) {}
-
-    if (enSesion == null || !enSesion.esAdmin()) {
-        System.out.println("Solo un administrador puede asignar roles.");
-        return false;
-    }
-    return cambiarRolUsuarioCSV(correo, nuevoRol);
+        Usuario enSesion = getUsuarioActual();
+        if (enSesion == null || !enSesion.esAdmin()) {
+            System.out.println("Solo un administrador puede asignar roles.");
+            return false;
+        }
+        return cambiarRolUsuarioCSV(correo, nuevoRol);
     }
 }

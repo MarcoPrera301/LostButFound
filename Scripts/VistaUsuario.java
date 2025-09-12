@@ -206,26 +206,38 @@ public class VistaUsuario
         System.out.print("Contraseña: ");
         String passLogin = sc.nextLine().trim();
 
-        java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoLogin, passLogin);
-        if (maybe.isEmpty()) {
-            System.out.println("Credenciales inválidas.");
-            return;
-        }
-        Usuario u = maybe.get();
+        Usuario u = sistema.getUsuarioActual();
+        if (u == null) {
+            final java.util.Scanner in = new java.util.Scanner(System.in);
 
+            System.out.print("Correo para autenticar: ");
+            correoLogin = in.nextLine().trim();
+
+            System.out.print("Contraseña: ");
+            passLogin = in.nextLine().trim();
+
+            java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoLogin, passLogin);
+            if (maybe.isEmpty()) {
+                System.out.println("Credenciales inválidas.");
+                return;
+            }
+            u = maybe.get();
+            sistema.setUsuarioActual(u);
+        }
+        
         boolean ok = sistema.reclamarObjetoConValidacion(
             idObj,
             u,
             correoConfirmado,
             (carnetConfirmado == 0 ? null : Integer.valueOf(carnetConfirmado))
-        );
+            );
 
-        if (ok) {
-            System.out.println("Reclamo realizado.");
-        } else {
-            System.out.println("No se pudo realizar el reclamo.");
+            if (ok) {
+                System.out.println("Reclamo realizado.");
+            } else {
+                System.out.println("No se pudo realizar el reclamo.");
+            }
         }
-    }
 
 
     public void mostrarPremiosDisponibles(List<Premio> premios) {
@@ -268,44 +280,44 @@ public class VistaUsuario
     }
 
     public void eliminarObjetoUI() {
-    if (sistema == null || !sistema.esAdminSesion()) {
-        System.out.println("Solo un administrador puede eliminar objetos.");
-        return;
-    }
-    System.out.println("== Eliminar objeto ==");
-    System.out.print("ID del objeto a eliminar: ");
-    int id = sc.nextInt();
-    sc.nextLine();
+        if (sistema == null || !sistema.esAdminSesion()) {
+            System.out.println("Solo un administrador puede eliminar objetos.");
+            return;
+        }
+        System.out.println("== Eliminar objeto ==");
+        System.out.print("ID del objeto a eliminar: ");
+        int id = sc.nextInt();
+        sc.nextLine();
 
-    System.out.print("Confirmar (S/N): ");
-    String ok = sc.nextLine().trim();
-    if (!ok.equalsIgnoreCase("S")) {
-        System.out.println("Operación cancelada.");
-        return;
-    }
+        System.out.print("Confirmar (S/N): ");
+        String ok = sc.nextLine().trim();
+        if (!ok.equalsIgnoreCase("S")) {
+            System.out.println("Operación cancelada.");
+            return;
+        }
 
-    boolean res = sistema.eliminarObjetoPorId(id);
-    System.out.println(res ? "Eliminado correctamente." : "No se pudo eliminar.");
+        boolean res = sistema.eliminarObjetoPorId(id);
+        System.out.println(res ? "Eliminado correctamente." : "No se pudo eliminar.");
     }
 
     public void asignarRolUI() {
-    if (sistema == null || !sistema.esAdminSesion()) {
-        System.out.println("Solo un administrador puede asignar roles.");
-        return;
-    }
-    System.out.println("== Asignar rol ==");
-    System.out.print("Correo del usuario: ");
-    String correo = sc.nextLine().trim();
+        if (sistema == null || !sistema.esAdminSesion()) {
+            System.out.println("Solo un administrador puede asignar roles.");
+            return;
+        }
+        System.out.println("== Asignar rol ==");
+        System.out.print("Correo del usuario: ");
+        String correo = sc.nextLine().trim();
 
-    System.out.print("Nuevo rol (ADMIN/ESTUDIANTE): ");
-    String rol = sc.nextLine().trim().toUpperCase();
+        System.out.print("Nuevo rol (ADMIN/ESTUDIANTE): ");
+        String rol = sc.nextLine().trim().toUpperCase();
 
-    if (!"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol)) {
-        System.out.println("Rol inválido.");
-        return;
-    }
+        if (!"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol)) {
+            System.out.println("Rol inválido.");
+            return;
+        }
 
-    boolean ok = sistema.asignarRolAUsuario(correo, rol);
-    System.out.println(ok ? "Rol actualizado." : "No se pudo actualizar el rol.");
+        boolean ok = sistema.asignarRolAUsuario(correo, rol);
+        System.out.println(ok ? "Rol actualizado." : "No se pudo actualizar el rol.");
     }
 }
