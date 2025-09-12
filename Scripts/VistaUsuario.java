@@ -1,12 +1,13 @@
-import java.util.Scanner;
 import java.time.LocalDate;
 import java.util.Optional;
+import java.util.Scanner;
 
 
 public class VistaUsuario 
 {
     private final Scanner sc;
     private int siguienteIdObjeto = 1;
+    private Sistema sistema;
 
     private String nombre;
     private String correo;
@@ -71,6 +72,9 @@ public class VistaUsuario
             case 4:
                 System.out.println("Volviendo al menú principal...");
                 return;
+            case 5:
+                reclamarObjetoUI();
+                break;
             default:
                 System.out.println("Opción no válida. Intente de nuevo.");
                 break;
@@ -179,4 +183,49 @@ public class VistaUsuario
     public String getCorreo() {
         return this.correo;
     }
+
+    public void setSistema(Sistema sistema) {
+        this.sistema = sistema;
+    }
+// --- Flujo UI para reclamar objeto con validación (usa this.sistema) ---
+    private void reclamarObjetoUI() {
+        System.out.println("== Reclamo de objeto ==");
+        System.out.print("ID del objeto a reclamar: ");
+        int idObj = sc.nextInt();
+        sc.nextLine();
+
+        System.out.print("Confirma tu correo institucional: ");
+        String correoConfirmado = sc.nextLine().trim();
+
+        System.out.print("Ingresa tu carnet (o 0 si no aplica): ");
+        int carnetConfirmado = sc.nextInt();
+        sc.nextLine();
+
+        // Autenticación rápida (si no manejas sesión en VistaUsuario)
+        System.out.print("Correo para autenticar: ");
+        String correoLogin = sc.nextLine().trim();
+        System.out.print("Contraseña: ");
+        String passLogin = sc.nextLine().trim();
+
+        java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoLogin, passLogin);
+        if (maybe.isEmpty()) {
+            System.out.println("Credenciales inválidas.");
+            return;
+        }
+        Usuario u = maybe.get();
+
+        boolean ok = sistema.reclamarObjetoConValidacion(
+            idObj,
+            u,
+            correoConfirmado,
+            (carnetConfirmado == 0 ? null : Integer.valueOf(carnetConfirmado))
+        );
+
+        if (ok) {
+            System.out.println("Reclamo realizado.");
+        } else {
+            System.out.println("No se pudo realizar el reclamo.");
+        }
+    }
+
 }

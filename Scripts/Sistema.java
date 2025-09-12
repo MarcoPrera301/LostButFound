@@ -1,11 +1,10 @@
-import java.util.List;
-import java.util.ArrayList;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 
 public class Sistema {
@@ -14,6 +13,31 @@ public class Sistema {
     private List<Premio> listaPremios;
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
+
+    public static final String ROL_ADMIN = "ADMIN";
+    public static final String ROL_ESTUDIANTE = "ESTUDIANTE";
+
+
+    public static final String ACCION_RECLAMAR_OBJETO = "RECLAMAR_OBJETO";
+    public static final String ACCION_GESTION_OBJETOS = "GESTION_OBJETOS";      // alta/baja/edición
+    public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
+    public static final String ACCION_REPORTES         = "REPORTES";
+
+    /** Chequeo de permisos por rol (ajústalo a tus reglas) */
+    public boolean tienePermiso(Usuario u, String accion) {
+        if (u == null || accion == null) return false;
+
+        if (u.esAdmin()) {
+            // Admin todo acceso
+            return true;
+        }
+
+        // Estudiante: puede reclamar objetos y ver listados, pero no administrar
+        if (u.esEstudiante()) {
+            return ACCION_RECLAMAR_OBJETO.equals(accion);
+        }
+        return false;
+    }
 
     // CSV de usuarios
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
@@ -219,39 +243,169 @@ public class Sistema {
         }
     }
 
-    // Autenticación básica (texto plano)
-    public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) { //cambia a un if else normal
-        Optional<Usuario> u = buscarUsuarioPorCorreoCSV(correo);
-        if (u.isPresent() && u.get().getContrasena().equals(contrasenaPlano)) {
-            return u;
-        }
-        return Optional.empty();
-    }
-
-    // ================== CSV: utilidades para el arranque ==================
-
-    // ¿Hay al menos un usuario (además de la cabecera)?
-    private boolean hayUsuariosCSV() {
-        try (BufferedReader br = Files.newBufferedReader(rutaCSVUsuarios, StandardCharsets.UTF_8)) {
-            String linea = br.readLine(); // cabecera
-            while ((linea = br.readLine()) != null) {
-                if (!linea.isBlank()) return true;
+        // Autenticación básica (texto plano)
+        public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) { //cambia a un if else normal
+            Optional<Usuario> u = buscarUsuarioPorCorreoCSV(correo);
+            if (u.isPresent() && u.get().getContrasena().equals(contrasenaPlano)) {
+                return u;
             }
-        } catch (IOException e) {
-            System.err.println("Error verificando usuarios CSV: " + e.getMessage());
+            return Optional.empty();
         }
-        return false;
-    }
 
-    // Crear admin por defecto si el CSV está vacío
-    private void crearAdminPorDefectoSiVacio() {
-        if (!hayUsuariosCSV()) {
-            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
-            if (ok) {
-                System.out.println(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
-            } else {
-                System.err.println(" No se pudo crear el admin por defecto.");
+        // ================== CSV: utilidades para el arranque ==================
+
+        // ¿Hay al menos un usuario (además de la cabecera)?
+        private boolean hayUsuariosCSV() {
+            try (BufferedReader br = Files.newBufferedReader(rutaCSVUsuarios, StandardCharsets.UTF_8)) {
+                String linea = br.readLine(); // cabecera
+                while ((linea = br.readLine()) != null) {
+                    if (!linea.isBlank()) return true;
+                }
+            } catch (IOException e) {
+                System.err.println("Error verificando usuarios CSV: " + e.getMessage());
+            }
+            return false;
+        }
+
+        // Crear admin por defecto si el CSV está vacío
+        private void crearAdminPorDefectoSiVacio() {
+            if (!hayUsuariosCSV()) {
+                boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
+                if (ok) {
+                    System.out.println(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
+                } else {
+                    System.err.println(" No se pudo crear el admin por defecto.");
+                }
             }
         }
+
+    public boolean cambiarRolUsuarioCSV(String correoInstitucional, String nuevoRol) {
+        if (correoInstitucional == null || nuevoRol == null) return false;
+
+        // 1) Buscar en memoria
+        Usuario target = null;
+        for (Usuario u : listaUsuarios) {
+            if (u != null && correoInstitucional.equalsIgnoreCase(u.getCorreo())) {
+                target = u;
+                break;
+            }
+        }
+        if (target == null) return false;
+
+        // 2) Cambiar en memoria
+        target.setRol(nuevoRol);
+
+        // 3) Reescribir CSV completo con el nuevo rol
+        return reescribirUsuariosCSV(); // Usa tu rutina de guardado/reescritura existente o crea una aquí
     }
+
+    /**
+     * Reescribe el CSV de usuarios en base a listaUsuarios.
+     * Implementación simple que sustituye el archivo con el contenido de la lista en memoria.
+     */
+    private boolean reescribirUsuariosCSV() {
+        try {
+            Path p = Paths.get("usuarios.csv");
+            // Cabecera según tu formato actual
+            StringBuilder sb = new StringBuilder();
+            sb.append("idUsuario,nombre,correo,contrasena,rol\n");
+            for (Usuario u : listaUsuarios) {
+                if (u == null) continue;
+                sb.append(u.getIdUsuario()).append(",")
+                .append(esc(u.getNombre())).append(",")
+                .append(esc(u.getCorreo())).append(",")
+                .append(esc(u.getContrasena())).append(",")
+                .append(esc(u.getRol()))
+                .append("\n");
+            }
+            Files.write(p, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (Exception e) {
+            System.err.println("Error reescribiendo usuarios.csv: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Utilidades mínimas para escapar CSV si no las tienes visibles aquí
+    private static String esc(String s) {
+        if (s == null) return "";
+        boolean q = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r");
+        String out = s.replace("\"", "\"\"");
+        return q ? "\"" + out + "\"" : out;
+    }
+
+    public boolean validarIdentidadParaReclamo(Usuario solicitante, String correoConfirmado, Integer carnetConfirmado) {
+        if (solicitante == null) return false;
+
+        boolean correoOk = (correoConfirmado != null) &&
+                correoConfirmado.equalsIgnoreCase(solicitante.getCorreo());
+
+        boolean carnetOk = true;
+        try {
+            // Si tu Usuario realmente tiene carnet distinto de 0, valida; si no, deja true para no bloquear
+            java.lang.reflect.Field f = solicitante.getClass().getDeclaredField("carnet");
+            f.setAccessible(true);
+            Object v = f.get(solicitante);
+            if (v instanceof Integer) {
+                int carnetReal = (Integer) v;
+                if (carnetReal > 0 && carnetConfirmado != null) {
+                    carnetOk = (carnetReal == carnetConfirmado.intValue());
+                }
+            }
+        } catch (Exception ignore) {
+            // Si no existe campo o no es accesible, no bloquees por carnet
+            carnetOk = true;
+        }
+
+        return correoOk && carnetOk;
+    }
+
+    /**
+     * Reclama un objeto con validación de identidad y control de permisos.
+     * Retorna true si el reclamo se completó (estado RECUPERADO + se registró usuario reclamante).
+     */
+    public boolean reclamarObjetoConValidacion(int idObjeto, Usuario solicitante, String correoConfirmado, Integer carnetConfirmado) {
+        if (solicitante == null) return false;
+
+        // 1) Permiso (estudiante SÍ puede reclamar; admin también)
+        if (!tienePermiso(solicitante, ACCION_RECLAMAR_OBJETO)) {
+            System.err.println("No tiene permiso para reclamar objetos.");
+            return false;
+        }
+
+        // 2) Ubicar objeto
+        Objeto objetivo = null;
+        for (Objeto o : listaObjetos) {
+            if (o == null) continue;
+            try {
+                // Intento de obtener id con reflexión si no tienes getter público
+                java.lang.reflect.Field fid = o.getClass().getDeclaredField("id");
+                fid.setAccessible(true);
+                Object val = fid.get(o);
+                if (val instanceof Integer && ((Integer) val) == idObjeto) {
+                    objetivo = o; break;
+                }
+            } catch (Exception e) {
+                // Si no hay id, puedes cambiar a criterio de búsqueda (por descripción/lugar/fecha)
+            }
+        }
+        if (objetivo == null) {
+            System.err.println("Objeto no encontrado para id: " + idObjeto);
+            return false;
+        }
+
+        // 3) Validación de identidad
+        boolean identidadOk = validarIdentidadParaReclamo(solicitante, correoConfirmado, carnetConfirmado);
+        if (!identidadOk) {
+            System.err.println("Validación de identidad fallida.");
+            return false;
+        }
+
+        // 4) Cambiar estado a RECUPERADO y registrar reclamante
+        objetivo.setEstadoRecuperado(java.time.LocalDate.now(), solicitante.getCorreo());
+        // Si llevas historial o CSV de objetos, persiste aquí (ej. reescritura de objetos.csv)
+
+        System.out.println("Objeto reclamado exitosamente por " + solicitante.getCorreo());
+        return true;
+    }    
 }

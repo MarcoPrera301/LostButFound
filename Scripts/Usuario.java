@@ -32,4 +32,17 @@ public class Usuario {
     public String getCorreo() { return correoInstitucional; }
     public String getContrasena() { return contrasena; }
     public String getRol() { return rol; }
+
+    public boolean esAdmin() {
+        return this.rol != null && this.rol.equalsIgnoreCase("ADMIN");
+    }
+
+    public boolean esEstudiante() {
+        return this.rol != null && this.rol.equalsIgnoreCase("ESTUDIANTE");
+    }
+
+    /** (Opcional, si necesitas cambiar rol en runtime; persistir en CSV lo maneja Sistema) */
+    public void setRol(String nuevoRol) {
+        this.rol = (nuevoRol == null ? "" : nuevoRol.toUpperCase());
+    }
 }
