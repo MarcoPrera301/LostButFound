@@ -771,4 +771,32 @@ public void canjearPremio(Usuario usuario) {
         }
         return out;
     }
+
+        public int donarNoReclamados(int limiteDias, Usuario actor) {
+        if (actor == null || !actor.esAdmin()) {
+            System.err.println("Permiso denegado: se requiere rol ADMIN para donar objetos no reclamados.");
+            return 0;
+        }
+        List<Objeto> candidatos = obtenerCandidatosDonacion(limiteDias);
+        if (candidatos.isEmpty()) return 0;
+
+        LocalDate hoy = LocalDate.now();
+        int cambios = 0;
+        for (Objeto o : candidatos) {
+            try {
+                o.setEstadoDonado(hoy);
+                cambios++;
+            } catch (Exception ignore) {}
+        }
+        boolean ok = reescribirObjetosCSV();
+        if (!ok) {
+            System.err.println("Advertencia: no se pudo persistir objetos donados en objetos.csv");
+        }
+        return cambios;
+    }
+
+    /** Versión práctica con el límite de 6 meses (180 días). */
+    public int donarNoReclamadosSemestre(Usuario actor) {
+        return donarNoReclamados(LIMITE_DIAS_NO_RECLAMADO, actor);
+    }
 }
