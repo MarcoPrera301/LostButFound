@@ -40,8 +40,11 @@ public class Sistema {
 
     public boolean registrarObjeto(Objeto objeto) {
         if (objeto.esValido()) {
-            listaObjetos.add(objeto);
-            registrarObjetoCSV(objeto);  // Registrar en CSV
+            listaObjetos.add(objeto);  // Registrar en memoria
+
+            // Registrar en CSV también
+            registrarObjetoCSV(objeto);
+
             return true;
         }
         return false;
