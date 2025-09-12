@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.time.LocalDate;
 
 public class Sistema {
     private List<Objeto> listaObjetos;
@@ -163,11 +164,7 @@ public class Sistema {
         );
 
         if (registrarObjeto(objeto)) {
-            boolean okCSV = insertarObjetoCSV(objeto);
-            if (!okCSV) {
-                return "Objeto registrado en memoria, pero falló la escritura en CSV.";
-            }
-            return "Objeto registrado exitosamente (lista + CSV).";
+            return "Objeto registrado exitosamente.";
         } else {
             return "Error al registrar el objeto. Por favor, intente de nuevo.";
         }
@@ -204,35 +201,45 @@ public class Sistema {
             System.err.println("No se pudo preparar el CSV de objetos: " + e.getMessage());
         }
     }
-    private String fechaStr(java.time.LocalDate d) {
-        return (d == null) ? "" : d.toString();
+    // ====== Lectura de objetos desde CSV (sin UI) ======
+    /** Lee todos los objetos desde data/objetos.csv. */
+    public List<Objeto> leerObjetosDesdeCSV() {
+        List<Objeto> lista = new ArrayList<>();
+        try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
+            String linea = br.readLine(); // cabecera
+            while ((linea = br.readLine()) != null) {
+                if (linea.isBlank()) continue;
+                String[] p = parseCSVLine(linea);
+                // Esperado: id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama
+                if (p.length < 6) continue; // mínimo hasta lugarEncontrado
+                String id              = p[0].trim();
+                int idInt;
+                try { idInt = Integer.parseInt(id); } catch (NumberFormatException e) { System.err.println("ID inválido en objetos.csv: " + id); continue; }
+                String descripcion     = p[1];
+                String tipo            = p[2];
+                String estado          = p[3];
+                LocalDate fechaEn      = (p.length > 4 && !p[4].isBlank()) ? LocalDate.parse(p[4].trim()) : null;
+                String lugar           = (p.length > 5) ? p[5] : "";
+                // fechaDevolucion (p[6]) y usuarioQueReclama (p[8]) son opcionales para construir la instancia básica
+                String reportadoPor    = (p.length > 7) ? p[7] : "";
+                Objeto o = new Objeto(descripcion, tipo, estado, fechaEn, lugar, idInt, reportadoPor);
+                // Nota: Si luego necesitas aplicar fechaDevolucion/usuarioQueReclama, agrega setters aquí.
+                lista.add(o);
+            }
+        } catch (IOException ex) {
+            System.err.println("Error leyendo objetos.csv: " + ex.getMessage());
+        } catch (Exception ex) {
+            System.err.println("Error parseando objetos.csv: " + ex.getMessage());
+        }
+        return lista;
     }
 
-    /** Inserta una fila en objetos.csv correspondiente al objeto dado. */
-    private boolean insertarObjetoCSV(Objeto o) {
-        if (o == null) return false;
-        String fila = String.join(",",
-                String.valueOf(o.getId()),
-                esc(o.getDescripcion()),
-                esc(o.getTipo()),
-                esc(o.getEstado()),
-                esc(fechaStr(o.getFechaEncontrado())),
-                esc(o.getLugarEncontrado()),
-                esc(fechaStr(o.getFechaDevolucion())),
-                esc(o.getReportadoPor()),
-                esc(o.getUsuarioQueReclama())
-        );
-        try (BufferedWriter bw = Files.newBufferedWriter(
-                rutaCSVObjetos, StandardCharsets.UTF_8,
-                StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
-            bw.write(fila);
-            bw.newLine();
-            return true;
-        } catch (IOException ex) {
-            System.err.println("Error escribiendo CSV de objetos: " + ex.getMessage());
-            return false;
-        }
+    /** Devuelve una copia de los objetos en memoria (listaObjetos). */
+    public List<Objeto> obtenerObjetosEnMemoria() {
+        return new ArrayList<>(listaObjetos);
     }
+
+
 
     private String hoy() {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
@@ -493,4 +500,31 @@ public void canjearPremio(Usuario usuario) {
         System.out.println("No tienes suficientes puntos para este premio.");
     }
 }
+
+    // ====== Utilidad: parsear una línea CSV con comillas ======
+    private static String[] parseCSVLine(String line) {
+        if (line == null) return new String[0];
+        java.util.List<String> out = new java.util.ArrayList<>();
+        StringBuilder sb = new StringBuilder();
+        boolean inQuotes = false;
+        for (int i = 0; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '"') {
+                if (inQuotes && i + 1 < line.length() && line.charAt(i + 1) == '"') {
+                    // comilla escapada
+                    sb.append('"');
+                    i++; // saltar la segunda comilla
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (c == ',' && !inQuotes) {
+                out.add(sb.toString());
+                sb.setLength(0);
+            } else {
+                sb.append(c);
+            }
+        }
+        out.add(sb.toString());
+        return out.toArray(new String[0]);
+    }
 }
