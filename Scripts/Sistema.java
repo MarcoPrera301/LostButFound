@@ -164,6 +164,8 @@ public class Sistema {
         );
 
         if (registrarObjeto(objeto)) {
+            boolean okCSV = insertarObjetoCSV(objeto);
+            if (!okCSV) { System.out.println("Advertencia: objeto en memoria pero fallo CSV"); }
             return "Objeto registrado exitosamente.";
         } else {
             return "Error al registrar el objeto. Por favor, intente de nuevo.";
@@ -202,7 +204,7 @@ public class Sistema {
         }
     }
     // ====== Lectura de objetos desde CSV (sin UI) ======
-    /** Lee todos los objetos desde data/objetos.csv. */
+    /** Lee todos los objetos desde data/objetos.csv.*/
     public List<Objeto> leerObjetosDesdeCSV() {
         List<Objeto> lista = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
@@ -526,5 +528,39 @@ public void canjearPremio(Usuario usuario) {
         }
         out.add(sb.toString());
         return out.toArray(new String[0]);
+    }
+
+    // Helper: fecha a 'YYYY-MM-DD' o vacío si es null
+    private String fechaStr(java.time.LocalDate d) {
+        return (d == null) ? "" : d.toString();
+    }
+
+    /** Inserta una fila en data/objetos.csv usando el orden de cabecera:
+     * id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama
+     */
+    private boolean insertarObjetoCSV(Objeto o) {
+        // Escapar campos con comillas y comas
+        String id              = String.valueOf(o.getId());
+        String descripcion     = esc(o.getDescripcion());
+        String tipo            = esc(o.getTipo());
+        String estado          = esc(o.getEstado());
+        String fechaEncontrado = esc(fechaStr(o.getFechaEncontrado()));
+        String lugar           = esc(o.getLugarEncontrado());
+        String fechaDev        = esc(fechaStr(o.getFechaDevolucion()));
+        String reportadoPor    = esc(o.getReportadoPor());
+        String usuarioReclama  = esc(o.getUsuarioQueReclama());
+
+        String fila = String.join(",", id, descripcion, tipo, estado,
+                                   fechaEncontrado, lugar, fechaDev, reportadoPor, usuarioReclama);
+        try (java.io.BufferedWriter bw = java.nio.file.Files.newBufferedWriter(
+                rutaCSVObjetos, java.nio.charset.StandardCharsets.UTF_8,
+                java.nio.file.StandardOpenOption.APPEND, java.nio.file.StandardOpenOption.CREATE)) {
+            bw.write(fila);
+            bw.newLine();
+            return true;
+        } catch (java.io.IOException ex) {
+            System.err.println("Error escribiendo objetos.csv: " + ex.getMessage());
+            return false;
+        }
     }
 }
