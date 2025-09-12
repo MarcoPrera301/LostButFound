@@ -756,4 +756,6 @@ public void canjearPremio(Usuario usuario) {
         }
     }
     public VistaUsuario getVistaUsuario() { return this.vistaUsuario; }
+
+    public static final int LIMITE_DIAS_NO_RECLAMADO = 180;
 }
