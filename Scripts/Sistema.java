@@ -38,6 +38,7 @@ public class Sistema {
 
     // CSV de usuarios
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
+    private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
 
     public Sistema() {
         listaObjetos = new ArrayList<>();
@@ -48,6 +49,7 @@ public class Sistema {
 
         // Preparar “BD” CSV
         asegurarCSVUsuariosConCabecera();
+        asegurarCSVObjetosConCabecera();
     }
 
     public void iniciarSistema() {
@@ -182,6 +184,23 @@ public class Sistema {
             System.err.println("No se pudo preparar el CSV de usuarios: " + e.getMessage());
         }
     }
+
+    /** Prepara el CSV de objetos con cabecera si no existe */
+    private void asegurarCSVObjetosConCabecera() {
+        try {
+            Files.createDirectories(rutaCSVObjetos.getParent());
+            if (Files.notExists(rutaCSVObjetos)) {
+                try (BufferedWriter bw = Files.newBufferedWriter(
+                        rutaCSVObjetos, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+                    bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama");
+                    bw.newLine();
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("No se pudo preparar el CSV de objetos: " + e.getMessage());
+        }
+    }
+
 
     private String hoy() {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
