@@ -187,7 +187,6 @@ public class VistaUsuario
     public void setSistema(Sistema sistema) {
         this.sistema = sistema;
     }
-// --- Flujo UI para reclamar objeto con validación (usa this.sistema) ---
     private void reclamarObjetoUI() {
         System.out.println("== Reclamo de objeto ==");
         System.out.print("ID del objeto a reclamar: ");
@@ -201,7 +200,6 @@ public class VistaUsuario
         int carnetConfirmado = sc.nextInt();
         sc.nextLine();
 
-        // Autenticación rápida (si no manejas sesión en VistaUsuario)
         System.out.print("Correo para autenticar: ");
         String correoLogin = sc.nextLine().trim();
         System.out.print("Contraseña: ");

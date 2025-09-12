@@ -19,20 +19,17 @@ public class Sistema {
 
 
     public static final String ACCION_RECLAMAR_OBJETO = "RECLAMAR_OBJETO";
-    public static final String ACCION_GESTION_OBJETOS = "GESTION_OBJETOS";      // alta/baja/edición
+    public static final String ACCION_GESTION_OBJETOS = "GESTION_OBJETOS";
     public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
     public static final String ACCION_REPORTES         = "REPORTES";
 
-    /** Chequeo de permisos por rol (ajústalo a tus reglas) */
     public boolean tienePermiso(Usuario u, String accion) {
         if (u == null || accion == null) return false;
 
         if (u.esAdmin()) {
-            // Admin todo acceso
             return true;
         }
 
-        // Estudiante: puede reclamar objetos y ver listados, pero no administrar
         if (u.esEstudiante()) {
             return ACCION_RECLAMAR_OBJETO.equals(accion);
         }
@@ -292,21 +289,14 @@ public class Sistema {
         }
         if (target == null) return false;
 
-        // 2) Cambiar en memoria
         target.setRol(nuevoRol);
 
-        // 3) Reescribir CSV completo con el nuevo rol
-        return reescribirUsuariosCSV(); // Usa tu rutina de guardado/reescritura existente o crea una aquí
+        return reescribirUsuariosCSV();
     }
 
-    /**
-     * Reescribe el CSV de usuarios en base a listaUsuarios.
-     * Implementación simple que sustituye el archivo con el contenido de la lista en memoria.
-     */
     private boolean reescribirUsuariosCSV() {
         try {
             Path p = Paths.get("usuarios.csv");
-            // Cabecera según tu formato actual
             StringBuilder sb = new StringBuilder();
             sb.append("idUsuario,nombre,correo,contrasena,rol\n");
             for (Usuario u : listaUsuarios) {
@@ -326,7 +316,6 @@ public class Sistema {
         }
     }
 
-    // Utilidades mínimas para escapar CSV si no las tienes visibles aquí
     private static String esc(String s) {
         if (s == null) return "";
         boolean q = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r");
@@ -342,7 +331,6 @@ public class Sistema {
 
         boolean carnetOk = true;
         try {
-            // Si tu Usuario realmente tiene carnet distinto de 0, valida; si no, deja true para no bloquear
             java.lang.reflect.Field f = solicitante.getClass().getDeclaredField("carnet");
             f.setAccessible(true);
             Object v = f.get(solicitante);
@@ -353,32 +341,24 @@ public class Sistema {
                 }
             }
         } catch (Exception ignore) {
-            // Si no existe campo o no es accesible, no bloquees por carnet
             carnetOk = true;
         }
 
         return correoOk && carnetOk;
     }
 
-    /**
-     * Reclama un objeto con validación de identidad y control de permisos.
-     * Retorna true si el reclamo se completó (estado RECUPERADO + se registró usuario reclamante).
-     */
     public boolean reclamarObjetoConValidacion(int idObjeto, Usuario solicitante, String correoConfirmado, Integer carnetConfirmado) {
         if (solicitante == null) return false;
 
-        // 1) Permiso (estudiante SÍ puede reclamar; admin también)
         if (!tienePermiso(solicitante, ACCION_RECLAMAR_OBJETO)) {
             System.err.println("No tiene permiso para reclamar objetos.");
             return false;
         }
 
-        // 2) Ubicar objeto
         Objeto objetivo = null;
         for (Objeto o : listaObjetos) {
             if (o == null) continue;
             try {
-                // Intento de obtener id con reflexión si no tienes getter público
                 java.lang.reflect.Field fid = o.getClass().getDeclaredField("id");
                 fid.setAccessible(true);
                 Object val = fid.get(o);
@@ -386,7 +366,6 @@ public class Sistema {
                     objetivo = o; break;
                 }
             } catch (Exception e) {
-                // Si no hay id, puedes cambiar a criterio de búsqueda (por descripción/lugar/fecha)
             }
         }
         if (objetivo == null) {
@@ -394,16 +373,15 @@ public class Sistema {
             return false;
         }
 
-        // 3) Validación de identidad
+
         boolean identidadOk = validarIdentidadParaReclamo(solicitante, correoConfirmado, carnetConfirmado);
         if (!identidadOk) {
             System.err.println("Validación de identidad fallida.");
             return false;
         }
 
-        // 4) Cambiar estado a RECUPERADO y registrar reclamante
+
         objetivo.setEstadoRecuperado(java.time.LocalDate.now(), solicitante.getCorreo());
-        // Si llevas historial o CSV de objetos, persiste aquí (ej. reescritura de objetos.csv)
 
         System.out.println("Objeto reclamado exitosamente por " + solicitante.getCorreo());
         return true;

@@ -41,7 +41,6 @@ public class Usuario {
         return this.rol != null && this.rol.equalsIgnoreCase("ESTUDIANTE");
     }
 
-    /** (Opcional, si necesitas cambiar rol en runtime; persistir en CSV lo maneja Sistema) */
     public void setRol(String nuevoRol) {
         this.rol = (nuevoRol == null ? "" : nuevoRol.toUpperCase());
     }
