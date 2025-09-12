@@ -204,7 +204,7 @@ public class Sistema {
         }
     }
     // ====== Lectura de objetos desde CSV (sin UI) ======
-    /** Lee todos los objetos desde data/objetos.csv.*/
+    /** Lee todos los objetos desde data/objetos.csv. No imprime nada (UI va en VistaUsuario). */
     public List<Objeto> leerObjetosDesdeCSV() {
         List<Objeto> lista = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
@@ -563,4 +563,86 @@ public void canjearPremio(Usuario usuario) {
             return false;
         }
     }
+
+    // ====== Utilidades y filtros (solo lógica, sin UI) ======
+    private static String norm(String s) {
+        return (s == null) ? "" : s.trim().toLowerCase();
+    }
+
+    /** Filtra por tipo exacto (ignorando mayúsculas/minúsculas). */
+    public List<Objeto> filtrarPorTipo(List<Objeto> fuente, String tipo) {
+        String t = norm(tipo);
+        List<Objeto> out = new ArrayList<>();
+        if (fuente == null) return out;
+        for (Objeto o : fuente) {
+            if (o == null) continue;
+            if (norm(o.getTipo()).equals(t)) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
+
+    /** Filtra por estado exacto (perdido, encontrado, recuperado, donado) ignorando mayúsculas. */
+    public List<Objeto> filtrarPorEstado(List<Objeto> fuente, String estado) {
+        String e = norm(estado);
+        List<Objeto> out = new ArrayList<>();
+        if (fuente == null) return out;
+        for (Objeto o : fuente) {
+            if (o == null) continue;
+            if (norm(o.getEstado()).equals(e)) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
+
+    /** Filtra por ubicación exacta (lugarEncontrado), ignorando mayúsculas/minúsculas. */
+    public List<Objeto> filtrarPorUbicacion(List<Objeto> fuente, String ubicacion) {
+        String u = norm(ubicacion);
+        List<Objeto> out = new ArrayList<>();
+        if (fuente == null) return out;
+        for (Objeto o : fuente) {
+            if (o == null) continue;
+            if (norm(o.getLugarEncontrado()).equals(u)) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
+
+    /** Filtra por rango de fechaEncontrado [desdeIncl, hastaIncl]. Si alguna es null, el rango es abierto por ese extremo. */
+    public List<Objeto> filtrarPorFechaEncontrado(List<Objeto> fuente, java.time.LocalDate desdeIncl, java.time.LocalDate hastaIncl) {
+        List<Objeto> out = new ArrayList<>();
+        if (fuente == null) return out;
+        for (Objeto o : fuente) {
+            if (o == null) continue;
+            java.time.LocalDate f = o.getFechaEncontrado();
+            if (f == null) continue; // si no tiene fecha, no entra al rango
+            boolean okDesde = (desdeIncl == null) || !f.isBefore(desdeIncl); // f >= desdeIncl
+            boolean okHasta = (hastaIncl == null) || !f.isAfter(hastaIncl);  // f <= hastaIncl
+            if (okDesde && okHasta) {
+                out.add(o);
+            }
+        }
+        return out;
+    }
+
+    /** Devuelve una copia ordenada por fechaEncontrado ascendente/descendente. Los null van al final. */
+    public List<Objeto> ordenarPorFechaEncontrado(List<Objeto> fuente, boolean asc) {
+        List<Objeto> copia = new ArrayList<>();
+        if (fuente != null) copia.addAll(fuente);
+        java.util.Comparator<Objeto> cmp = (a, b) -> {
+            java.time.LocalDate fa = (a == null) ? null : a.getFechaEncontrado();
+            java.time.LocalDate fb = (b == null) ? null : b.getFechaEncontrado();
+            if (fa == null && fb == null) return 0;
+            if (fa == null) return 1; // null al final
+            if (fb == null) return -1;
+            int base = fa.compareTo(fb);
+            return asc ? base : -base;
+        };
+        copia.sort(cmp);
+        return copia;
+    }
+
 }
