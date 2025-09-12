@@ -1,7 +1,7 @@
 import java.time.LocalDate;
 import java.util.Optional;
 import java.util.Scanner;
-
+import java.util.List;
 
 public class VistaUsuario 
 {
