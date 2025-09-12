@@ -19,7 +19,7 @@ public class VistaUsuario
     }
 
     public int IniciarVistaUsuario() 
-{
+    {
         System.out.println("====== Lost But Found - UVG ======");
         System.out.println("Bienvenido al sistema de objetos perdidos.");
         System.out.println("\n--- Inicio ---");
@@ -29,7 +29,7 @@ public class VistaUsuario
         int opcion = sc.nextInt();
         sc.nextLine(); // limpiar buffer
         return opcion;
-}
+    }
 
 
     public int verMenu()
@@ -52,7 +52,7 @@ public class VistaUsuario
     }
 
     // filtros 
-    public void verFiltros() 
+    public int verFiltros() 
     {
         System.out.println("\n--- Filtros de Búsqueda de Objetos Encontrados ---");
         System.out.println("1. Filtrar por tipo de objeto");
@@ -63,30 +63,9 @@ public class VistaUsuario
         
         int opcion = sc.nextInt();
         sc.nextLine(); // Limpiar el buffer
-
-        switch (opcion) {
-            case 1:
-                String tipo = filtroTipo();
-                // Aquí iría la lógica para filtrar por tipo
-                break;
-            case 2:
-                LocalDate fecha = filtroFecha();
-                // Aquí iría la lógica para filtrar por fecha
-                break;
-            case 3:
-                String ubicacion = filtroUbicacion();
-                // Aquí iría la lógica para filtrar por ubicación
-            case 4:
-                System.out.println("Volviendo al menú principal...");
-                return;
-            case 5:
-                reclamarObjetoUI();
-                break;
-            default:
-                System.out.println("Opción no válida. Intente de nuevo.");
-                break;
-        }
+        return opcion;
     }
+
 
     public String filtroTipo() 
     {
@@ -95,9 +74,16 @@ public class VistaUsuario
         return tipo;
     }
 
-    public LocalDate filtroFecha() 
+    public LocalDate filtroFecha1() 
     {
-        System.out.println("Ingrese la fecha de reporte (YYYY-MM-DD):");
+        System.out.println("Ingrese una fecha de reporte (YYYY-MM-DD):");
+        String fechaStr = sc.nextLine();
+        return LocalDate.parse(fechaStr);
+    }
+
+    public LocalDate filtroFecha2() 
+    {
+        System.out.println("Ingrese otra fecha de reporte (YYYY-MM-DD):");
         String fechaStr = sc.nextLine();
         return LocalDate.parse(fechaStr);
     }
@@ -107,6 +93,11 @@ public class VistaUsuario
         System.out.println("Ingrese la ubicación donde se encontró el objeto: (CIT-618, Biblioteca, Edificio H, etc)");
         String ubicacion = sc.nextLine().toLowerCase();
         return ubicacion;
+    }
+
+    public void mensaje(String mensaje) 
+    {
+        System.out.println(mensaje);
     }
 
     // ----- Login -----
@@ -122,7 +113,8 @@ public class VistaUsuario
     }
 
     /** Pide credenciales y autentica contra el CSV usando Sistema */
-    public boolean mostrarLoginConsola(Sistema sistema) {
+    public boolean mostrarLoginConsola(Sistema sistema) 
+    {
     String correo = solicitarCorreo();
     String contrasena = solicitarContrasena();
     this.correo = correo;
@@ -136,7 +128,7 @@ public class VistaUsuario
         System.out.println("Credenciales inválidas.");
         return false; 
     }
-}
+    }
 
     // ----- Solicitud de datos para crear Objeto -----
 
@@ -164,7 +156,7 @@ public class VistaUsuario
 
     public String solicitarUbicacionObjeto() 
     {
-        System.out.println("Ingrese dónde encontró el objeto:");
+        System.out.println("Ingrese dónde encontro/perdio el objeto:");
         return sc.nextLine();
     }
 
@@ -194,7 +186,7 @@ public class VistaUsuario
     public void setSistema(Sistema sistema) {
         this.sistema = sistema;
     }
-    private void reclamarObjetoUI() {
+    public void reclamarObjetoUI() {
         System.out.println("== Reclamo de objeto ==");
         System.out.print("ID del objeto a reclamar: ");
         int idObj = sc.nextInt();
@@ -234,28 +226,42 @@ public class VistaUsuario
     }
 
 
-public void mostrarPremiosDisponibles(List<Premio> premios) {
-    System.out.println("\n--- Premios Disponibles ---");
-    if (premios.isEmpty()) {
-        System.out.println("No hay premios registrados en el sistema.");
-        return;
+    public void mostrarPremiosDisponibles(List<Premio> premios) {
+        System.out.println("\n--- Premios Disponibles ---");
+        if (premios.isEmpty()) {
+            System.out.println("No hay premios registrados en el sistema.");
+            return;
+        }
+        for (int i = 0; i < premios.size(); i++) {
+            Premio p = premios.get(i);
+            System.out.println((i + 1) + ". " + p.getNombre() + " - " + p.getDescripcion() + " (" + p.getPuntos() + " pts)");
+        }
     }
-    for (int i = 0; i < premios.size(); i++) {
-        Premio p = premios.get(i);
-        System.out.println((i + 1) + ". " + p.getNombre() + " - " + p.getDescripcion() + " (" + p.getPuntos() + " pts)");
-    }
-}
 
-public int elegirPremio() {
-    System.out.print("Seleccione el número del premio a canjear: ");
-    int opcion = sc.nextInt();
-    sc.nextLine();
-    return opcion;
-}
+    public int elegirPremio() {
+        System.out.print("Seleccione el número del premio a canjear: ");
+        int opcion = sc.nextInt();
+        sc.nextLine();
+        return opcion;
+    }
 
 /** Solicita el nombre del usuario (UI) */
-    public String solicitarNombrePersona() {
+    public String solicitarNombrePersona() 
+    {
         System.out.print("Nombre: ");
         return sc.nextLine().trim();
+    }
+
+    public void mostrarObjetos(List<Objeto> objetos) {
+        if (objetos.isEmpty()) {
+            System.out.println("No se encontraron objetos.");
+            return;
+        }
+        System.out.println("\n--- Objetos Encontrados ---");
+        for (Objeto obj : objetos) {
+            System.out.println("ID: " + obj.getId() + ", Tipo: " + obj.getTipo() + ", Descripción: " + obj.getDescripcion() +
+            ", Estado: " + obj.getEstado() + ", Fecha Encontrado: " + obj.getFechaEncontrado() +
+            ", Lugar Encontrado: " + obj.getLugarEncontrado());
+        }
     }
 }

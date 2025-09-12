@@ -42,7 +42,7 @@ public class Sistema {
     private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
 
     public Sistema() {
-        listaObjetos = new ArrayList<>();
+        listaObjetos = leerObjetosDesdeCSV();
         listaUsuarios = new ArrayList<>();
         listaPremios = new ArrayList<>();
         listaAdministradores = new ArrayList<>();
@@ -68,15 +68,15 @@ public class Sistema {
             boolean ok = insertarUsuarioCSV(nombre, correo, contrasena, "USUARIO");
             if (ok) {
                 buscarUsuarioPorCorreoCSV(correo).ifPresent(listaUsuarios::add);
-                System.out.println("Registro exitoso. Ahora inicia sesión.");
+                vistaUsuario.mensaje("Registro exitoso. Ahora inicia sesión.");
             } else {
-                System.out.println("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
+                vistaUsuario.mensaje("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
             }
             login = vistaUsuario.mostrarLoginConsola(this);
         } else if (opcionInicio == 2) {
             login = vistaUsuario.mostrarLoginConsola(this);
         } else {
-            System.out.println("Opción inválida. Saliendo...");
+            vistaUsuario.mensaje("Opción inválida. Saliendo...");
             return;
         }
 
@@ -91,11 +91,38 @@ public class Sistema {
                 if(opcion==1)  
                 {
                     String resultado = registrarObjeto1();
-                    System.out.println(resultado);
+                    vistaUsuario.mensaje(resultado);
                 }
                 else if(opcion==2)  
                 {
-                    vistaUsuario.verFiltros();
+                    switch (vistaUsuario.verFiltros()) {
+                        case 1:
+                            String tipo = vistaUsuario.filtroTipo();
+                            List<Objeto> listafiltradaT = filtrarPorTipo(listaObjetos, tipo);
+                            vistaUsuario.mostrarObjetos(listafiltradaT);
+                            break;
+                        case 2:
+                            LocalDate fecha1 = vistaUsuario.filtroFecha1();
+                            LocalDate fecha2 = vistaUsuario.filtroFecha2();
+                            
+                            List<Objeto> listafiltradaF = filtrarPorFechaEncontrado(listaObjetos, fecha1, fecha2);
+                            vistaUsuario.mostrarObjetos(listafiltradaF);
+                            break;
+                        case 3:
+                            String ubicacion = vistaUsuario.filtroUbicacion();
+                            List<Objeto> listafiltradaU = filtrarPorUbicacion(listaObjetos, ubicacion);
+                            vistaUsuario.mostrarObjetos(listafiltradaU);
+                            
+                        case 4:
+                            vistaUsuario.mensaje("Volviendo al menú principal...");
+                            return;
+                        case 5:
+                            vistaUsuario.reclamarObjetoUI();
+                            break;
+                        default:
+                            vistaUsuario.mensaje("Opción no válida. Intente de nuevo.");
+                            break;
+                    }
                 }
                 else if(opcion==3)  
                 {}
@@ -105,7 +132,7 @@ public class Sistema {
                     if (usuarioOpt.isPresent()) {
                         canjearPremio(usuarioOpt.get());
                     } else {
-                        System.out.println("Error: no se encontró el usuario en sesión.");
+                        vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
                     }
                 }
                 else if(opcion==5)  
@@ -113,7 +140,7 @@ public class Sistema {
                 else if(opcion==6)
                 { 
                     cierre = true;
-                    System.out.println("Saliendo del sistema. ¡Hasta luego!");
+                    vistaUsuario.mensaje("Saliendo del sistema. ¡Hasta luego!");
                 } 
             }
         }
@@ -140,7 +167,7 @@ public class Sistema {
             buscarUsuarioPorCorreoCSV(usuario.getCorreo())
                 .ifPresent(listaUsuarios::add);
         } else {
-            System.err.println("No se registró en CSV; no se agrega a memoria.");
+            vistaUsuario.mensaje("No se registró en CSV; no se agrega a memoria.");
         }
     }
 
@@ -358,7 +385,7 @@ public class Sistema {
             if (!hayUsuariosCSV()) {
                 boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
                 if (ok) {
-                    System.out.println(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
+                    vistaUsuario.mensaje(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
                 } else {
                     System.err.println(" No se pudo crear el admin por defecto.");
                 }
@@ -472,7 +499,7 @@ public class Sistema {
 
         objetivo.setEstadoRecuperado(java.time.LocalDate.now(), solicitante.getCorreo());
 
-        System.out.println("Objeto reclamado exitosamente por " + solicitante.getCorreo());
+        vistaUsuario.mensaje("Objeto reclamado exitosamente por " + solicitante.getCorreo());
         return true;
     }    
 
@@ -480,7 +507,7 @@ public class Sistema {
 //Metodo para canjear premios
 public void canjearPremio(Usuario usuario) {
     if (listaPremios.isEmpty()) {
-        System.out.println("No hay premios disponibles para canjear.");
+        vistaUsuario.mensaje("No hay premios disponibles para canjear.");
         return;
     }
 
@@ -488,7 +515,7 @@ public void canjearPremio(Usuario usuario) {
     int opcion = vistaUsuario.elegirPremio();
 
     if (opcion < 1 || opcion > listaPremios.size()) {
-        System.out.println("Opción inválida.");
+        vistaUsuario.mensaje("Opción inválida.");
         return;
     }
 
@@ -497,9 +524,9 @@ public void canjearPremio(Usuario usuario) {
     if (usuario.getPuntos() >= premioSeleccionado.getPuntos()) {
         usuario.restarPuntos(premioSeleccionado.getPuntos());
         usuario.agregarPremio(premioSeleccionado);
-        System.out.println("¡Canje exitoso! Has obtenido: " + premioSeleccionado.getNombre());
+        vistaUsuario.mensaje("¡Canje exitoso! Has obtenido: " + premioSeleccionado.getNombre());
     } else {
-        System.out.println("No tienes suficientes puntos para este premio.");
+        vistaUsuario.mensaje("No tienes suficientes puntos para este premio.");
     }
 }
 
@@ -551,7 +578,7 @@ public void canjearPremio(Usuario usuario) {
         String usuarioReclama  = esc(o.getUsuarioQueReclama());
 
         String fila = String.join(",", id, descripcion, tipo, estado,
-                                   fechaEncontrado, lugar, fechaDev, reportadoPor, usuarioReclama);
+                                fechaEncontrado, lugar, fechaDev, reportadoPor, usuarioReclama);
         try (java.io.BufferedWriter bw = java.nio.file.Files.newBufferedWriter(
                 rutaCSVObjetos, java.nio.charset.StandardCharsets.UTF_8,
                 java.nio.file.StandardOpenOption.APPEND, java.nio.file.StandardOpenOption.CREATE)) {
