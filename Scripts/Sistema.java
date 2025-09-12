@@ -2,11 +2,11 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.time.LocalDate;
 
 public class Sistema {
     private List<Objeto> listaObjetos;
@@ -116,16 +116,15 @@ public class Sistema {
                         case 4:
                             vistaUsuario.mensaje("Volviendo al menú principal...");
                             return;
-                        case 5:
-                            vistaUsuario.reclamarObjetoUI();
-                            break;
                         default:
                             vistaUsuario.mensaje("Opción no válida. Intente de nuevo.");
                             break;
                     }
                 }
                 else if(opcion==3)  
-                {}
+                {
+                    vistaUsuario.reclamarObjetoUI();
+                }
                 else if(opcion==4)  
                 {
                     Optional<Usuario> usuarioOpt = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
