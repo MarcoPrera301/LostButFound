@@ -45,4 +45,14 @@ public class Usuario {
     public void setRol(String nuevoRol) {
         this.rol = (nuevoRol == null ? "" : nuevoRol.toUpperCase());
     }
+
+    public int getPuntos() { return puntos; }
+
+    public void agregarPremio(Premio premio) {
+       this.premioReclamado.add(premio);
+    }
+
+    public void restarPuntos(int cantidad) {
+        this.puntos = Math.max(0, this.puntos - cantidad);
+    }
 }
