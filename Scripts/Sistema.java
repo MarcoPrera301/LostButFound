@@ -163,7 +163,11 @@ public class Sistema {
         );
 
         if (registrarObjeto(objeto)) {
-            return "Objeto registrado exitosamente.";
+            boolean okCSV = insertarObjetoCSV(objeto);
+            if (!okCSV) {
+                return "Objeto registrado en memoria, pero falló la escritura en CSV.";
+            }
+            return "Objeto registrado exitosamente (lista + CSV).";
         } else {
             return "Error al registrar el objeto. Por favor, intente de nuevo.";
         }
@@ -200,7 +204,35 @@ public class Sistema {
             System.err.println("No se pudo preparar el CSV de objetos: " + e.getMessage());
         }
     }
+    private String fechaStr(java.time.LocalDate d) {
+        return (d == null) ? "" : d.toString();
+    }
 
+    /** Inserta una fila en objetos.csv correspondiente al objeto dado. */
+    private boolean insertarObjetoCSV(Objeto o) {
+        if (o == null) return false;
+        String fila = String.join(",",
+                String.valueOf(o.getId()),
+                esc(o.getDescripcion()),
+                esc(o.getTipo()),
+                esc(o.getEstado()),
+                esc(fechaStr(o.getFechaEncontrado())),
+                esc(o.getLugarEncontrado()),
+                esc(fechaStr(o.getFechaDevolucion())),
+                esc(o.getReportadoPor()),
+                esc(o.getUsuarioQueReclama())
+        );
+        try (BufferedWriter bw = Files.newBufferedWriter(
+                rutaCSVObjetos, StandardCharsets.UTF_8,
+                StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+            bw.write(fila);
+            bw.newLine();
+            return true;
+        } catch (IOException ex) {
+            System.err.println("Error escribiendo CSV de objetos: " + ex.getMessage());
+            return false;
+        }
+    }
 
     private String hoy() {
         return new SimpleDateFormat("yyyy-MM-dd").format(new Date());
