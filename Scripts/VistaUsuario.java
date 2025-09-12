@@ -193,14 +193,12 @@ public class VistaUsuario
         int idObj = sc.nextInt();
         sc.nextLine();
 
-        System.out.print("Confirma tu correo institucional: ");
-        String correoConfirmado = sc.nextLine().trim();
-
         System.out.print("Ingresa tu carnet (o 0 si no aplica): ");
         int carnetConfirmado = sc.nextInt();
         sc.nextLine();
 
         System.out.print("Correo para autenticar: ");
+        String correoConfirmado = sc.nextLine().trim();
         String correoLogin = sc.nextLine().trim();
         System.out.print("Contraseña: ");
         String passLogin = sc.nextLine().trim();
