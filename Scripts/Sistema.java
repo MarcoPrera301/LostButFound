@@ -15,6 +15,7 @@ public class Sistema {
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
     private Usuario usuarioActual;
+    private Usuario usuarioEnSesion;
 
     public static final String ROL_ADMIN = "ADMIN";
     public static final String ROL_ESTUDIANTE = "ESTUDIANTE";
@@ -25,7 +26,6 @@ public class Sistema {
     public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
     public static final String ACCION_REPORTES         = "REPORTES";
     public static final String ACCION_ELIMINAR_OBJETOS = "ELIMINAR_OBJETOS";
-    public static final String ACCION_ASIGNAR_ROLES   = "ASIGNAR_ROLES";
 
     public Usuario getUsuarioActual() {
         return this.usuarioActual;
@@ -36,7 +36,8 @@ public class Sistema {
     }
 
     public boolean esAdminSesion() {
-        return this.usuarioActual != null && this.usuarioActual.esAdmin();
+        return usuarioEnSesion != null 
+            && "ADMIN".equalsIgnoreCase(usuarioEnSesion.getRol());
     }
 
     public boolean tienePermiso(Usuario u, String accion) {
@@ -168,15 +169,7 @@ public class Sistema {
                         vistaUsuario.eliminarObjetoUI();
                     }
                 }
-                else if(opcion==7)  
-                {
-                    if (!tienePermiso(usuarioActual, ACCION_ASIGNAR_ROLES)) {
-                        System.out.println("No tienes permiso para asignar roles.");
-                    } else {
-                        vistaUsuario.asignarRolUI();
-                    }
-                }
-                else if(opcion==8)
+                else if(opcion==7)
                 { 
                     cierre = true;
                     vistaUsuario.mensaje("Saliendo del sistema. ¡Hasta luego!");
@@ -208,6 +201,24 @@ public class Sistema {
         } else {
             vistaUsuario.mensaje("No se registró en CSV; no se agrega a memoria.");
         }
+    }
+
+    public boolean iniciarSesion(String nombre, String contrasena) {
+        for (Usuario u : listaUsuarios) {
+            if (u.getNombre().equalsIgnoreCase(nombre) && u.getContrasena().equals(contrasena)) {
+                this.usuarioEnSesion = u;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void cerrarSesion() {
+        this.usuarioEnSesion = null;
+    }
+
+    public Usuario getUsuarioEnSesion() {
+        return this.usuarioEnSesion;
     }
 
     public void registrarPremio(Premio premio) {
@@ -738,12 +749,11 @@ public void canjearPremio(Usuario usuario) {
         return false;
     }
 
-    public boolean asignarRolAUsuario(String correo, String nuevoRol) {
-        Usuario enSesion = getUsuarioActual();
-        if (enSesion == null || !enSesion.esAdmin()) {
-            System.out.println("Solo un administrador puede asignar roles.");
-            return false;
+    public void setVistaUsuario(VistaUsuario v) {
+        this.vistaUsuario = v;
+        if (v != null) {
+            v.setSistema(this);
         }
-        return cambiarRolUsuarioCSV(correo, nuevoRol);
     }
+    public VistaUsuario getVistaUsuario() { return this.vistaUsuario; }
 }

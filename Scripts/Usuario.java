@@ -34,7 +34,7 @@ public class Usuario {
     public String getRol() { return rol; }
 
     public boolean esAdmin() {
-        return this.rol != null && this.rol.equalsIgnoreCase("ADMIN");
+        return this.rol != null && this.rol.trim().equalsIgnoreCase("ADMIN");
     }
 
     public boolean esEstudiante() {
@@ -42,7 +42,7 @@ public class Usuario {
     }
 
     public void setRol(String nuevoRol) {
-        this.rol = (nuevoRol == null ? "" : nuevoRol.toUpperCase());
+        this.rol = (nuevoRol == null ? "" : nuevoRol.trim().toUpperCase());
     }
 
     public int getPuntos() { return puntos; }

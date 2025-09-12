@@ -43,8 +43,7 @@ public class VistaUsuario
         System.out.println("4. Canjear premios");
         System.out.println("5. Ver perfil y puntos");
         System.out.println("6. Eliminar objetos perdidos");
-        System.out.println("7. Asignar roles");
-        System.out.println("8. Salir");
+        System.out.println("7. Salir");
         System.out.println("Seleccione una opción: ");
 
         opcion = sc.nextInt();
@@ -298,27 +297,6 @@ public class VistaUsuario
 
         boolean res = sistema.eliminarObjetoPorId(id);
         System.out.println(res ? "Eliminado correctamente." : "No se pudo eliminar.");
-    }
-
-    public void asignarRolUI() {
-        if (sistema == null || !sistema.esAdminSesion()) {
-            System.out.println("Solo un administrador puede asignar roles.");
-            return;
-        }
-        System.out.println("== Asignar rol ==");
-        System.out.print("Correo del usuario: ");
-        String correo = sc.nextLine().trim();
-
-        System.out.print("Nuevo rol (ADMIN/ESTUDIANTE): ");
-        String rol = sc.nextLine().trim().toUpperCase();
-
-        if (!"ADMIN".equals(rol) && !"ESTUDIANTE".equals(rol)) {
-            System.out.println("Rol inválido.");
-            return;
-        }
-
-        boolean ok = sistema.asignarRolAUsuario(correo, rol);
-        System.out.println(ok ? "Rol actualizado." : "No se pudo actualizar el rol.");
     }
 
     public void mostrarPerfilUsuario(Usuario usuario) {
