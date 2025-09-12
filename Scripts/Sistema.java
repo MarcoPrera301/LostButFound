@@ -758,4 +758,17 @@ public void canjearPremio(Usuario usuario) {
     public VistaUsuario getVistaUsuario() { return this.vistaUsuario; }
 
     public static final int LIMITE_DIAS_NO_RECLAMADO = 180;
+
+        public List<Objeto> obtenerCandidatosDonacion(int limiteDias) {
+        List<Objeto> out = new ArrayList<>();
+        if (listaObjetos == null) return out;
+        for (Objeto o : listaObjetos) {
+            try {
+                if (o != null && o.esCandidatoNoReclamado(limiteDias)) {
+                    out.add(o);
+                }
+            } catch (Exception ignore) {}
+        }
+        return out;
+    }
 }
