@@ -17,12 +17,39 @@ public class VistaUsuario
         this.sc = new Scanner(System.in);
     }
 
-    public void IniciarVistaUsuario() 
-    {
-        System.out.println("====== Lost But Found - UVG ======");
-        System.out.println("Bienvenido al sistema de objetos perdidos.");
-        // Aquí puedes mostrar menús o instrucciones iniciales
+    public void IniciarVistaUsuario(Sistema sistema) {
+    System.out.println("====== Lost But Found - UVG ======");
+    System.out.println("1. Iniciar sesión");
+    System.out.println("2. Registrarse");
+    System.out.print("Seleccione una opción: ");
+    int opcion = sc.nextInt();
+    sc.nextLine();  // Limpiar el buffer de la consola
+
+    switch (opcion) {
+        case 1:
+            mostrarLoginConsola(sistema);
+            break;
+        case 2:
+            registrarNuevoUsuario(sistema);
+            break;
+        default:
+            System.out.println("Opción inválida, intente nuevamente.");
     }
+}
+
+public void registrarNuevoUsuario(Sistema sistema) {
+    System.out.println("Registro de nuevo usuario:");
+    String nombre = solicitarNombre();
+    String correo = solicitarCorreo();
+    String contrasena = solicitarContrasena();
+
+    Usuario nuevoUsuario = new Usuario(
+        sistema.obtenerSiguienteIdUsuario(), nombre, correo, contrasena, "Usuario"
+    );
+    sistema.registrarUsuario(nuevoUsuario);
+    System.out.println("Usuario registrado con éxito. Ahora puedes iniciar sesión.");
+}
+
 
     public int verMenu()
     {
