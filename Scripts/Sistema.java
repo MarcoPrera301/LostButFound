@@ -72,6 +72,8 @@ public class Sistema {
         int opcionInicio = vistaUsuario.IniciarVistaUsuario();
         // Si no hay usuarios, crea un admin por defecto
         crearAdminPorDefectoSiVacio();
+        registrarPremio(new Premio("Descuento Cafetería", "10% en comida", 50));
+        registrarPremio(new Premio("Horas Beca", "5 horas beca", 250));
 
         boolean login = false;
         if (opcionInicio == 1) {
@@ -150,7 +152,14 @@ public class Sistema {
                     }
                 }
                 else if(opcion==5)  
-                {}
+                {
+                    Optional<Usuario> usuarioOpt = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
+                    if (usuarioOpt.isPresent()) {
+                        vistaUsuario.mostrarPerfilUsuario(usuarioOpt.get()); // --- NUEVO ---
+                    } else {
+                        vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
+                    }
+                }
                 else if(opcion==6)  
                 {
                     if (!tienePermiso(usuarioActual, ACCION_ELIMINAR_OBJETOS)) {

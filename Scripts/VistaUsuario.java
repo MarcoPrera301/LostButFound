@@ -320,4 +320,20 @@ public class VistaUsuario
         boolean ok = sistema.asignarRolAUsuario(correo, rol);
         System.out.println(ok ? "Rol actualizado." : "No se pudo actualizar el rol.");
     }
+
+    public void mostrarPerfilUsuario(Usuario usuario) {
+        System.out.println("\n--- Perfil del Usuario ---");
+        System.out.println("Nombre: " + usuario.getNombre());
+        System.out.println("Correo: " + usuario.getCorreo());
+        System.out.println("Rol: " + usuario.getRol());
+        System.out.println("Puntos: " + usuario.getPuntos());
+
+        if (usuario.getPuntos() == 0) {
+            System.out.println("No tienes puntos acumulados todavía.");
+        }
+
+        if (usuario.esAdmin()) {
+            System.out.println("Tienes permisos de administrador.");
+        }
+    }
 }
