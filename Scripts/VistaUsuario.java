@@ -199,21 +199,13 @@ public class VistaUsuario
 
         System.out.print("Correo para autenticar: ");
         String correoConfirmado = sc.nextLine().trim();
-        String correoLogin = sc.nextLine().trim();
         System.out.print("Contraseña: ");
         String passLogin = sc.nextLine().trim();
 
         Usuario u = sistema.getUsuarioActual();
         if (u == null) {
             final java.util.Scanner in = new java.util.Scanner(System.in);
-
-            System.out.print("Correo para autenticar: ");
-            correoLogin = in.nextLine().trim();
-
-            System.out.print("Contraseña: ");
-            passLogin = in.nextLine().trim();
-
-            java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoLogin, passLogin);
+            java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoConfirmado, passLogin);
             if (maybe.isEmpty()) {
                 System.out.println("Credenciales inválidas.");
                 return;
@@ -312,4 +304,10 @@ public class VistaUsuario
             System.out.println("Tienes permisos de administrador.");
         }
     }
+
+    /** Mensajes de error provenientes del sistema. */
+    public void error(String mensaje) {
+        System.err.println(mensaje);
+    }
+
 }
