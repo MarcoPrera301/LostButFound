@@ -18,7 +18,8 @@ public class VistaUsuario
         this.sc = new Scanner(System.in);
     }
 
-    public int IniciarVistaUsuario() {
+    public int IniciarVistaUsuario() 
+{
         System.out.println("====== Lost But Found - UVG ======");
         System.out.println("Bienvenido al sistema de objetos perdidos.");
         System.out.println("\n--- Inicio ---");
@@ -28,12 +29,8 @@ public class VistaUsuario
         int opcion = sc.nextInt();
         sc.nextLine(); // limpiar buffer
         return opcion;
-    }
+}
 
-    public String solicitarNombrePersona() {
-        System.out.print("Nombre: ");
-        return sc.nextLine().trim();
-    }
 
     public int verMenu()
     {
@@ -255,4 +252,10 @@ public int elegirPremio() {
     sc.nextLine();
     return opcion;
 }
+
+/** Solicita el nombre del usuario (UI) */
+    public String solicitarNombrePersona() {
+        System.out.print("Nombre: ");
+        return sc.nextLine().trim();
+    }
 }
