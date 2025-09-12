@@ -1,2 +1,3 @@
 idUsuario,nombre,correo,contrasena,rol,creadoEn
 1,Admin,admin@uvg.edu,1234,ADMIN,2025-09-10
+2,David,dia25314@uvg.edu.gt,5678,USUARIO,2025-09-11

@@ -51,10 +51,32 @@ public class Sistema {
     }
 
     public void iniciarSistema() {
-        vistaUsuario.IniciarVistaUsuario();
-        // Si no hay usuarios, crea un admin por defecto y luego entra a login
+        int opcionInicio = vistaUsuario.IniciarVistaUsuario();
+        // Si no hay usuarios, crea un admin por defecto
         crearAdminPorDefectoSiVacio();
-        boolean login = vistaUsuario.mostrarLoginConsola(this);
+
+        boolean login = false;
+        if (opcionInicio == 1) {
+            // Registro con rol predeterminado USUARIO
+            String nombre = vistaUsuario.solicitarNombrePersona();
+            String correo = vistaUsuario.solicitarCorreo();
+            String contrasena = vistaUsuario.solicitarContrasena();
+
+            boolean ok = insertarUsuarioCSV(nombre, correo, contrasena, "USUARIO");
+            if (ok) {
+                buscarUsuarioPorCorreoCSV(correo).ifPresent(listaUsuarios::add);
+                System.out.println("Registro exitoso. Ahora inicia sesión.");
+            } else {
+                System.out.println("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
+            }
+            login = vistaUsuario.mostrarLoginConsola(this);
+        } else if (opcionInicio == 2) {
+            login = vistaUsuario.mostrarLoginConsola(this);
+        } else {
+            System.out.println("Opción inválida. Saliendo...");
+            return;
+        }
+
         boolean cierre = false;
 
         while (!cierre) 

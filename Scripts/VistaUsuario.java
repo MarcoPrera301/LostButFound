@@ -18,11 +18,21 @@ public class VistaUsuario
         this.sc = new Scanner(System.in);
     }
 
-    public void IniciarVistaUsuario() 
-    {
+    public int IniciarVistaUsuario() {
         System.out.println("====== Lost But Found - UVG ======");
         System.out.println("Bienvenido al sistema de objetos perdidos.");
-        // Aquí puedes mostrar menús o instrucciones iniciales
+        System.out.println("\n--- Inicio ---");
+        System.out.println("1. Registrarse");
+        System.out.println("2. Iniciar sesión");
+        System.out.print("Seleccione una opción: ");
+        int opcion = sc.nextInt();
+        sc.nextLine(); // limpiar buffer
+        return opcion;
+    }
+
+    public String solicitarNombrePersona() {
+        System.out.print("Nombre: ");
+        return sc.nextLine().trim();
     }
 
     public int verMenu()
