@@ -50,6 +50,34 @@ public class Sistema {
         return false;
     }
 
+    // Mostrar todos los objetos registrados
+    public void mostrarObjetos() {
+        System.out.println("Listado de objetos registrados:");
+
+        // Mostrar los objetos en memoria
+        if (listaObjetos.isEmpty()) {
+            System.out.println("No hay objetos registrados en memoria.");
+        } else {
+            for (Objeto objeto : listaObjetos) {
+                System.out.println("ID: " + objeto.getId() + ", Descripción: " + objeto.getDescripcion() + ", Tipo: " + objeto.getTipo() + ", Estado: " + objeto.getEstado());
+            }
+        }
+
+        // Mostrar los objetos en el CSV
+        try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
+            String linea = br.readLine(); // saltar cabecera
+            while ((linea = br.readLine()) != null) {
+                if (linea.isBlank()) continue;
+                String[] p = linea.split(",", -1);
+                if (p.length < 7) continue;  // Verificar que haya suficientes datos
+
+                System.out.println("ID: " + p[0] + ", Descripción: " + p[1] + ", Tipo: " + p[2] + ", Estado: " + p[3] + ", Fecha Encontrado: " + p[4] + ", Ubicación: " + p[5] + ", Reportado por: " + p[6]);
+            }
+        } catch (IOException e) {
+            System.err.println("Error al leer el archivo CSV de objetos: " + e.getMessage());
+        }
+    }
+
     // Persistir primero en CSV y luego a memoria
     public void registrarUsuario(Usuario usuario) {
         boolean ok = insertarUsuarioCSV(
