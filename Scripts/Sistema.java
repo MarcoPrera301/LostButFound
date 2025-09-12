@@ -30,40 +30,9 @@ public class Sistema {
     }
 
     public void iniciarSistema() {
-        vistaUsuario.IniciarVistaUsuario();
+        vistaUsuario.IniciarVistaUsuario(this); // Mostrar la vista con opciones
         // Si no hay usuarios, crea un admin por defecto y luego entra a login
         crearAdminPorDefectoSiVacio();
-        boolean login = vistaUsuario.mostrarLoginConsola(this);
-        boolean cierre = false;
-
-        while (!cierre) 
-        {
-        if (login) 
-            {
-                int opcion = vistaUsuario.verMenu();
-
-                if(opcion==1)  
-                {
-                    String resultado = registrarObjeto1();
-                    System.out.println(resultado);
-                }
-                else if(opcion==2)  
-                {
-                    vistaUsuario.verFiltros();
-                }
-                else if(opcion==3)  
-                {}
-                else if(opcion==4)  
-                {}
-                else if(opcion==5)  
-                {}
-                else if(opcion==6)
-                { 
-                    cierre = true;
-                    System.out.println("Saliendo del sistema. ¡Hasta luego!");
-                } 
-            }
-        }
     }
 
     public boolean registrarObjeto(Objeto objeto) {
@@ -88,32 +57,6 @@ public class Sistema {
                 .ifPresent(listaUsuarios::add);
         } else {
             System.err.println("No se registró en CSV; no se agrega a memoria.");
-        }
-    }
-
-    public void registrarPremio(Premio premio) {
-        listaPremios.add(premio);
-    }
-
-    public void registrarAdministrador(Administrador administrador) {
-        listaAdministradores.add(administrador);
-    }
-
-    public String registrarObjeto1() {
-        Objeto objeto = new Objeto(
-            vistaUsuario.solicitarDescripcion(),
-            vistaUsuario.solicitarTipoObjeto(),
-            vistaUsuario.estadoObjeto(),
-            vistaUsuario.solicitarFechaEncontrado(),
-            vistaUsuario.solicitarUbicacionObjeto(),
-            vistaUsuario.siguienteIdObjeto(),
-            vistaUsuario.getCorreo()
-        );
-
-        if (registrarObjeto(objeto)) {
-            return "Objeto registrado exitosamente.";
-        } else {
-            return "Error al registrar el objeto. Por favor, intente de nuevo.";
         }
     }
 
@@ -220,7 +163,7 @@ public class Sistema {
     }
 
     // Autenticación básica (texto plano)
-    public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) { //cambia a un if else normal
+    public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) {
         Optional<Usuario> u = buscarUsuarioPorCorreoCSV(correo);
         if (u.isPresent() && u.get().getContrasena().equals(contrasenaPlano)) {
             return u;
@@ -228,7 +171,7 @@ public class Sistema {
         return Optional.empty();
     }
 
-    // ================== CSV: utilidades para el arranque ==================
+    // ================== CSV: utilidades de arranque ==================
 
     // ¿Hay al menos un usuario (además de la cabecera)?
     private boolean hayUsuariosCSV() {
@@ -246,11 +189,11 @@ public class Sistema {
     // Crear admin por defecto si el CSV está vacío
     private void crearAdminPorDefectoSiVacio() {
         if (!hayUsuariosCSV()) {
-            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
+            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu", "1234", "ADMIN");
             if (ok) {
-                System.out.println(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
+                System.out.println("✔ Admin por defecto creado: admin@uvg.edu / 1234");
             } else {
-                System.err.println(" No se pudo crear el admin por defecto.");
+                System.err.println("✖ No se pudo crear el admin por defecto.");
             }
         }
     }
