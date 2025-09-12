@@ -17,8 +17,6 @@ public class Sistema {
 
     // CSV de usuarios
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
-    // CSV de objetos
-    private final Path rutaCSVObjetos = Paths.get("data", "objetos.csv");
 
     public Sistema() {
         listaObjetos = new ArrayList<>();
@@ -29,7 +27,6 @@ public class Sistema {
 
         // Preparar “BD” CSV
         asegurarCSVUsuariosConCabecera();
-        asegurarCSVObjetosConCabecera();
     }
 
     public void iniciarSistema() {
@@ -41,7 +38,6 @@ public class Sistema {
     public boolean registrarObjeto(Objeto objeto) {
         if (objeto.esValido()) {
             listaObjetos.add(objeto);
-            registrarObjetoCSV(objeto);  // Registrar en CSV
             return true;
         }
         return false;
@@ -77,22 +73,6 @@ public class Sistema {
             }
         } catch (IOException e) {
             System.err.println("No se pudo preparar el CSV de usuarios: " + e.getMessage());
-        }
-    }
-
-    // CSV de objetos
-    private void asegurarCSVObjetosConCabecera() {
-        try {
-            Files.createDirectories(rutaCSVObjetos.getParent());
-            if (Files.notExists(rutaCSVObjetos)) {
-                try (BufferedWriter bw = Files.newBufferedWriter(
-                        rutaCSVObjetos, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-                    bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,reportadoPor");
-                    bw.newLine();
-                }
-            }
-        } catch (IOException e) {
-            System.err.println("No se pudo preparar el CSV de objetos: " + e.getMessage());
         }
     }
 
@@ -179,28 +159,6 @@ public class Sistema {
         } catch (IOException ex) {
             System.err.println("Error escribiendo CSV de usuarios: " + ex.getMessage());
             return false;
-        }
-    }
-
-    // Insertar objeto en CSV
-    private void registrarObjetoCSV(Objeto objeto) {
-        String fila = String.join(",",
-                String.valueOf(objeto.getId()),
-                objeto.getDescripcion(),
-                objeto.getTipo(),
-                objeto.getEstado(),
-                objeto.getFechaEncontrado() != null ? objeto.getFechaEncontrado().toString() : "",
-                objeto.getLugarEncontrado(),
-                objeto.getReportadoPor()
-        );
-
-        try (BufferedWriter bw = Files.newBufferedWriter(
-                rutaCSVObjetos, StandardCharsets.UTF_8,
-                StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
-            bw.write(fila);
-            bw.newLine();
-        } catch (IOException ex) {
-            System.err.println("Error escribiendo en CSV de objetos: " + ex.getMessage());
         }
     }
 
