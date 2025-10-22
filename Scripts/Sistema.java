@@ -17,7 +17,6 @@ public class Sistema {
     private List<Premio> listaPremios;
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
-    private ObjetosCSV objetosCSV;
     private Usuario usuarioActual;
     private Usuario usuarioEnSesion;
 
@@ -60,14 +59,11 @@ public class Sistema {
 
     // ====== Constructor ======
     public Sistema() {
-        // Inicializar manejador de CSV de objetos
-        objetosCSV = new ObjetosCSV(rutaCSVObjetos);
-
         listaObjetos         = leerObjetosDesdeCSV();
         listaUsuarios        = new ArrayList<>();
         listaPremios         = new ArrayList<>();
         listaAdministradores = new ArrayList<>();
-        vistaUsuario         = new VistaUsuario();
+        vistaUsuario         = new VistaUsuario(this);
         usuariosCSV          = new UsuariosCSV(rutaCSVUsuarios);
 
         // Preparar CSV
@@ -142,70 +138,91 @@ public class Sistema {
 
         boolean cierre = false;
         while (!cierre) {
-            int opcion = vistaUsuario.verMenu();
+        int opcion = vistaUsuario.verMenu();
 
-            if (opcion == 1) {
+        switch (opcion) {
+            case 1: // Reportar objeto perdido/encontrado
                 String resultado = registrarObjeto1();
                 vistaUsuario.mensaje(resultado);
-            }
-            else if (opcion == 2) {
-                vistaUsuario.mostrarObjetos(listaObjetos);
-            }
-            else if (opcion == 3) {
-                String resultado = buscarObjeto();
-                vistaUsuario.mensaje(resultado);
-            }
-            else if (opcion == 4) {
-                vistaUsuario.reclamarObjetoUI();
-                vistaUsuario.mensaje("Operación de reclamo finalizada.");
-            }
-            else if (opcion == 5) {
-                vistaUsuario.validarReclamoComoAdmin();
-                vistaUsuario.mensaje("Validación finalizada.");
-            }
-            else if (opcion == 6) {
-                vistaUsuario.mostrarPremiosDisponibles(listaPremios);
-            }
-            else if (opcion == 7) {
-                String resultado = entregarPremio();
-                vistaUsuario.mensaje(resultado);
-            }
-            else if (opcion == 8) {
-                String resultado = reporte();
-                vistaUsuario.mensaje(resultado);
-            }
-            else if (opcion == 9) {
-                // Alterna rol simple: ADMIN <-> USUARIO
-                String correo = vistaUsuario.solicitarCorreo();
-                Optional<Usuario> uopt = buscarUsuarioPorCorreoCSV(correo);
-                if (uopt.isPresent()) {
-                    String actual = uopt.get().getRol();
-                    String nuevo  = ("ADMIN".equalsIgnoreCase(actual)) ? "USUARIO" : "ADMIN";
-                    boolean ok = cambiarRolUsuarioCSV(correo, nuevo);
-                    vistaUsuario.mensaje(ok ? "Rol actualizado a " + nuevo : "No se pudo actualizar el rol");
-                } else {
-                    vistaUsuario.mensaje("No se encontró el usuario con ese correo.");
+                break;
+                
+            case 2: // Búsqueda de objetos encontrados
+                switch (vistaUsuario.verFiltros()) {
+                    case 1:
+                        String tipo = vistaUsuario.filtroTipo();
+                        List<Objeto> listafiltradaT = filtrarPorTipo(listaObjetos, tipo);
+                        vistaUsuario.mostrarObjetos(listafiltradaT);
+                        break;
+                    case 2:
+                        LocalDate fecha1 = vistaUsuario.filtroFecha1();
+                        LocalDate fecha2 = vistaUsuario.filtroFecha2();
+                        List<Objeto> listafiltradaF = filtrarPorFechaEncontrado(listaObjetos, fecha1, fecha2);
+                        vistaUsuario.mostrarObjetos(listafiltradaF);
+                        break;
+                    case 3:
+                        String ubicacion = vistaUsuario.filtroUbicacion();
+                        List<Objeto> listafiltradaU = filtrarPorUbicacion(listaObjetos, ubicacion);
+                        vistaUsuario.mostrarObjetos(listafiltradaU);
+                        break;
+                    case 4:
+                        vistaUsuario.mensaje("Volviendo al menú principal...");
+                        break;
+                    default:
+                        vistaUsuario.mensaje("Opción no válida. Intente de nuevo.");
+                        break;
                 }
-            }
-            else if (opcion == 10) {
-                vistaUsuario.mensaje(vista());
-            }
-            else if (opcion == 11) {
-                vistaUsuario.mensaje("Saliendo...");
+                break;
+                
+            case 3: // Validación y reclamo de objeto
+                vistaUsuario.reclamarObjetoUI();
+                break;
+                
+            case 4: // Canjear premios
+                Optional<Usuario> usuarioOpt = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
+                if (usuarioOpt.isPresent()) {
+                    canjearPremio(usuarioOpt.get());
+                } else {
+                    vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
+                }
+                break;
+                
+            case 5: // Ver perfil y puntos
+                Optional<Usuario> usuarioPerfil = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
+                if (usuarioPerfil.isPresent()) {
+                    vistaUsuario.mostrarPerfilUsuario(usuarioPerfil.get());
+                } else {
+                    vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
+                }
+                break;
+                
+            case 6: // Eliminar objetos perdidos
+                if (!tienePermiso(usuarioActual, ACCION_ELIMINAR_OBJETOS)) {
+                    vistaUsuario.mensaje("No tienes permiso para eliminar objetos.");
+                } else {
+                    vistaUsuario.eliminarObjetoUI();
+                }
+                break;
+                
+            case 7: // Salir
                 cierre = true;
-            }
-            else {
+                vistaUsuario.mensaje("Saliendo del sistema. ¡Hasta luego!");
+                break;
+                
+            default:
                 vistaUsuario.mensaje("Opción inválida.");
-            }
+                break;
         }
     }
+    }
 
-    private String vista() {
+
+    public String vista() {
         return "Vista en Mantenimiento...  ...";
     }
 
     // ====== Objetos ======
-    private String registrarObjeto1() {
+    public String registrarObjeto1() 
+    {
         Objeto objeto = new Objeto(
             vistaUsuario.solicitarDescripcion(),
             vistaUsuario.solicitarTipoObjeto(),
@@ -220,13 +237,13 @@ public class Sistema {
         if (registrarObjeto(objeto)) {
             boolean okCSV = insertarObjetoCSV(objeto);
             return okCSV ? "Objeto registrado correctamente y guardado en CSV."
-                         : "Objeto registrado, pero error guardando en CSV.";
+                        : "Objeto registrado, pero error guardando en CSV.";
         } else {
             return "No se pudo registrar el objeto (validación falló).";
         }
     }
 
-    private boolean registrarObjeto(Objeto objeto) {
+    public boolean registrarObjeto(Objeto objeto) {
         if (objeto == null) return false;
         if (objeto.getDescripcion() == null || objeto.getDescripcion().isBlank()) return false;
         if (objeto.getLugarEncontrado() == null || objeto.getLugarEncontrado().isBlank()) return false;
@@ -234,7 +251,7 @@ public class Sistema {
         return true;
     }
 
-    private String verObjetos() {
+    public String verObjetos() {
         StringBuilder sb = new StringBuilder();
         sb.append("Objetos registrados:\n");
         for (Objeto o : listaObjetos) {
@@ -250,7 +267,7 @@ public class Sistema {
         return sb.toString();
     }
 
-    private String buscarObjeto() {
+    public String buscarObjeto() {
         // La Vista no tiene solicitarPatronBusqueda(); usamos filtros existentes
         String tipo = vistaUsuario.filtroTipo();
         LocalDate f1 = vistaUsuario.filtroFecha1();
@@ -282,28 +299,135 @@ public class Sistema {
     }
 
     // ====== CSV de OBJETOS (permanece en Sistema) ======
-    private void asegurarCSVObjetosConCabecera() {
-        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
-        objetosCSV.asegurarCSVObjetosConCabecera();
+    public void asegurarCSVObjetosConCabecera() {
+        try {
+            Files.createDirectories(rutaCSVObjetos.getParent());
+            if (Files.notExists(rutaCSVObjetos)) {
+                try (BufferedWriter bw = Files.newBufferedWriter(
+                        rutaCSVObjetos, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
+                    bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama");
+                    bw.newLine();
+                }
+            }
+        } catch (IOException e) {
+            uiError("Error preparando CSV de objetos: " + e.getMessage());
+        }
     }
 
     public List<Objeto> leerObjetosDesdeCSV() {
-        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
-        return objetosCSV.leerObjetosDesdeCSV();
+        List<Objeto> out = new ArrayList<>();
+        try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
+            String linea = br.readLine(); // cabecera
+            while ((linea = br.readLine()) != null) {
+                if (linea.isBlank()) continue;
+                String[] p = parseCSVLine(linea);
+                if (p.length < 9) continue;
+                try {
+                    int id = Integer.parseInt(p[0].trim());
+                    String descripcion = p[1];
+                    String tipo = p[2];
+                    String estado = p[3];
+                    String fechaEncontrado = p[4];
+                    String lugarEncontrado = p[5];
+                    String fechaDevolucion = p[6];
+                    String reportadoPor = p[7];
+                    String usuarioQueReclama = p[8];
+
+                    Objeto o = new Objeto(
+                        descripcion,
+                        tipo,
+                        estado,
+                        (fechaEncontrado == null || fechaEncontrado.isBlank() ? null : LocalDate.parse(fechaEncontrado)),
+                        lugarEncontrado,
+                        id,
+                        reportadoPor
+                    );
+
+                    if (fechaDevolucion != null && !fechaDevolucion.isBlank()) {
+                        o.setFechaDevolucion(LocalDate.parse(fechaDevolucion));
+                    }
+                    if (usuarioQueReclama != null && !usuarioQueReclama.isBlank()) {
+                        o.setUsuarioQueReclama(usuarioQueReclama);
+                        if ("pendiente_validacion".equalsIgnoreCase(estado)) {
+                            o.setEstado(Objeto.ESTADO_PENDIENTE_VALIDACION);
+                        }
+                    }
+                    out.add(o);
+                } catch (Exception ignore) {
+                    // línea inválida: se ignora
+                }
+            }
+        } catch (IOException e) {
+            uiError("Error leyendo CSV de objetos: " + e.getMessage());
+        }
+        return out;
     }
 
-    private boolean insertarObjetoCSV(Objeto o) {
-        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
-        return objetosCSV.insertarObjetoCSV(o);
+    public boolean insertarObjetoCSV(Objeto o) {
+        if (o == null) return false;
+        String fila = String.join(",",
+                String.valueOf(o.getId()),
+                esc(o.getDescripcion()),
+                esc(o.getTipo()),
+                esc(o.getEstado()),
+                esc(o.getFechaEncontrado() == null ? "" : o.getFechaEncontrado().toString()),
+                esc(o.getLugarEncontrado()),
+                esc(o.getFechaDevolucion() == null ? "" : o.getFechaDevolucion().toString()),
+                esc(o.getReportadoPor() == null ? "" : o.getReportadoPor()),
+                esc(o.getUsuarioQueReclama() == null ? "" : o.getUsuarioQueReclama())
+        );
+        try (BufferedWriter bw = Files.newBufferedWriter(
+                rutaCSVObjetos, StandardCharsets.UTF_8,
+                StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
+            bw.write(fila);
+            bw.newLine();
+            return true;
+        } catch (IOException e) {
+            uiError("Error guardando objeto en CSV: " + e.getMessage());
+            return false;
+        }
     }
 
-    private boolean reescribirObjetosCSV() {
-        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
-        return objetosCSV.reescribirObjetosCSV(listaObjetos);
+    public boolean reescribirObjetosCSV() {
+        Path src = rutaCSVObjetos;
+        Path tmp = src.resolveSibling(src.getFileName().toString() + ".tmp");
+        try (BufferedWriter bw = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8,
+                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+
+            bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama");
+            bw.newLine();
+
+            for (Objeto o : listaObjetos) {
+                if (o == null) continue;
+                bw.write(String.join(",",
+                    String.valueOf(o.getId()),
+                    esc(o.getDescripcion()),
+                    esc(o.getTipo()),
+                    esc(o.getEstado()),
+                    esc(o.getFechaEncontrado() == null ? "" : o.getFechaEncontrado().toString()),
+                    esc(o.getLugarEncontrado()),
+                    esc(o.getFechaDevolucion() == null ? "" : o.getFechaDevolucion().toString()),
+                    esc(o.getReportadoPor() == null ? "" : o.getReportadoPor()),
+                    esc(o.getUsuarioQueReclama() == null ? "" : o.getUsuarioQueReclama())
+                ));
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            uiError("Error preparando escritura de objetos: " + e.getMessage());
+            return false;
+        }
+
+        try {
+            Files.move(tmp, src, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+            return true;
+        } catch (IOException e) {
+            uiError("Error finalizando escritura de objetos: " + e.getMessage());
+            return false;
+        }
     }
 
     // ====== Usuarios (con UsuariosCSV) ======
-    private void crearAdminPorDefectoSiVacio() {
+    public void crearAdminPorDefectoSiVacio() {
         if (!hayUsuariosCSV()) {
             boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
             if (!ok) uiError(" No se pudo crear el admin por defecto.");
@@ -363,7 +487,7 @@ public class Sistema {
     }
 
     // ====== Envoltorios (compatibilidad) ======
-    private void asegurarCSVUsuariosConCabecera() {
+    public void asegurarCSVUsuariosConCabecera() {
         usuariosCSV.asegurarArchivoConCabecera();
     }
 
@@ -375,12 +499,12 @@ public class Sistema {
         return usuariosCSV.insertarUsuario(nombre, correo, contrasena, rol);
     }
 
-    private boolean hayUsuariosCSV() {
+    public boolean hayUsuariosCSV() {
         return usuariosCSV.hayUsuarios();
     }
 
     // Antes reescribía usuarios.csv perdiendo 'creadoEn'. Se deja por compatibilidad, pero no se usa para cambio de rol.
-    private boolean reescribirUsuariosCSV() {
+    public boolean reescribirUsuariosCSV() {
         try {
             Path p = Paths.get("usuarios.csv");
             StringBuilder sb = new StringBuilder();
@@ -404,12 +528,14 @@ public class Sistema {
     }
 
     // ====== Métodos que usa la Vista ======
-    public List<Objeto> obtenerObjetosEnMemoria() {
+    public List<Objeto> obtenerObjetosEnMemoria() 
+    {
         return this.listaObjetos;
     }
 
     // requerido por VistaUsuario
-    public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) {
+    public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) 
+    {
         List<Objeto> out = new ArrayList<>();
         if (entrada == null) return out;
         for (Objeto o : entrada) {
@@ -421,11 +547,60 @@ public class Sistema {
         return out;
     }
 
-    public boolean reclamarObjeto(int idObj, Usuario solicitante) {
+    private List<Objeto> filtrarPorTipo(List<Objeto> objetos, String tipo) 
+    {
+        List<Objeto> resultado = new ArrayList<>();
+        if (objetos == null || tipo == null || tipo.isBlank()) 
+        {
+            return resultado;
+        }
+        
+        String tipoBuscado = tipo.trim().toLowerCase();
+        for (Objeto obj : objetos) 
+        {
+            if (obj != null && obj.getTipo() != null && obj.getTipo().toLowerCase().contains(tipoBuscado)) 
+            {
+                resultado.add(obj);
+            }
+        }
+        return resultado;
+    }
+
+    public List<Objeto> filtrarPorFechaEncontrado(List<Objeto> objetos, LocalDate fechaInicio, LocalDate fechaFin) 
+    {
+    List<Objeto> resultado = new ArrayList<>();
+    for (Objeto obj : objetos) {
+        if (obj != null && obj.getFechaEncontrado() != null) {
+            LocalDate fechaObj = obj.getFechaEncontrado();
+            if ((fechaInicio == null || !fechaObj.isBefore(fechaInicio)) &&
+                (fechaFin == null || !fechaObj.isAfter(fechaFin))) {
+                resultado.add(obj);
+            }
+        }
+    }
+    return resultado;
+    }
+
+    public List<Objeto> filtrarPorUbicacion(List<Objeto> objetos, String ubicacion) 
+    {
+        List<Objeto> resultado = new ArrayList<>();
+        for (Objeto obj : objetos) {
+            if (obj != null && obj.getLugarEncontrado() != null && 
+                obj.getLugarEncontrado().toLowerCase().contains(ubicacion.toLowerCase())) {
+                resultado.add(obj);
+            }
+        }
+        return resultado;
+    }
+
+    public boolean reclamarObjeto(int idObj, Usuario solicitante) 
+    {
         if (solicitante == null) return false;
-        for (Objeto o : listaObjetos) {
+        for (Objeto o : listaObjetos) 
+        {
             if (o == null) continue;
-            if (o.getId() == idObj) {
+            if (o.getId() == idObj) 
+            {
                 if (!Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(o.getEstado())) return false;
                 o.setEstado(Objeto.ESTADO_PENDIENTE_VALIDACION);
                 o.setUsuarioQueReclama(solicitante.getCorreo());
@@ -435,21 +610,27 @@ public class Sistema {
         return false;
     }
 
-    public List<Objeto> obtenerObjetosPendientesValidacion() {
+    public List<Objeto> obtenerObjetosPendientesValidacion() 
+    {
         List<Objeto> out = new ArrayList<>();
-        for (Objeto o : listaObjetos) {
-            if (o != null && Objeto.ESTADO_PENDIENTE_VALIDACION.equalsIgnoreCase(o.getEstado())) {
+        for (Objeto o : listaObjetos) 
+        {
+            if (o != null && Objeto.ESTADO_PENDIENTE_VALIDACION.equalsIgnoreCase(o.getEstado())) 
+            {
                 out.add(o);
             }
         }
         return out;
     }
 
-    public boolean validarReclamoObjeto(int idObj, Usuario administrador) {
+    public boolean validarReclamoObjeto(int idObj, Usuario administrador) 
+    {
         if (administrador == null || !administrador.puedeValidarReclamos()) return false;
-        for (Objeto o : listaObjetos) {
+        for (Objeto o : listaObjetos) 
+        {
             if (o == null) continue;
-            if (o.getId() == idObj) {
+            if (o.getId() == idObj) 
+            {
                 if (!Objeto.ESTADO_PENDIENTE_VALIDACION.equalsIgnoreCase(o.getEstado())) return false;
                 o.setEstado(Objeto.ESTADO_RECUPERADO);
                 o.setFechaDevolucion(LocalDate.now());
@@ -465,22 +646,22 @@ public class Sistema {
     }
 
     // ====== Premios y Reporte (faltaban) ======
-    private void registrarPremio(Premio premio) {
+    public void registrarPremio(Premio premio) {
         if (premio != null) listaPremios.add(premio);
     }
 
-    private String entregarPremio() {
+    public String entregarPremio() {
         if (usuarioActual == null) return "No hay usuario en sesión.";
         if (!usuarioActual.esAdmin()) return "Solo ADMIN puede entregar premios.";
         return "Premio entregado (simulado).";
     }
 
-    private String reporte() {
+    public String reporte() {
         return "Reporte generado (simulado).";
     }
 
     // ====== utilidades simples ======
-    private static String[] parseCSVLine(String line) {
+    public static String[] parseCSVLine(String line) {
         if (line == null) return new String[0];
         ArrayList<String> out = new ArrayList<>();
         StringBuilder sb = new StringBuilder();
@@ -500,17 +681,44 @@ public class Sistema {
         return out.toArray(new String[0]);
     }
 
-    private static String esc(String s) {
+    public static String esc(String s) {
         if (s == null) return "";
         boolean q = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r");
         String out = s.replace("\"", "\"\"");
         return q ? "\"" + out + "\"" : out;
     }
 
-    private void uiError(String msg) {
+    public void uiError(String msg) {
         if (this.vistaUsuario != null) this.vistaUsuario.error(msg);
     }
-    private void uiInfo(String msg) {
+    public void uiInfo(String msg) {
         if (this.vistaUsuario != null) this.vistaUsuario.mensaje(msg);
     }
+
+    public void canjearPremio(Usuario usuario)
+    {
+    if (listaPremios.isEmpty()) {
+        vistaUsuario.mensaje("No hay premios disponibles para canjear.");
+        return;
+    }
+
+    vistaUsuario.mostrarPremiosDisponibles(listaPremios);
+    int opcion = vistaUsuario.elegirPremio();
+
+    if (opcion < 1 || opcion > listaPremios.size()) {
+        vistaUsuario.mensaje("Opción inválida.");
+        return;
+    }
+
+    Premio premioSeleccionado = listaPremios.get(opcion - 1);
+
+    if (usuario.getPuntos() >= premioSeleccionado.getPuntos()) {
+        usuario.restarPuntos(premioSeleccionado.getPuntos());
+        usuario.agregarPremio(premioSeleccionado);
+        vistaUsuario.mensaje("¡Canje exitoso! Has obtenido: " + premioSeleccionado.getNombre());
+    } else {
+        vistaUsuario.mensaje("No tienes suficientes puntos para este premio.");
+    }
+    }
 }
+

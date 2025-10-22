@@ -13,10 +13,12 @@ public class VistaUsuario
     private String correo;
     private int carnet;
 
-    public VistaUsuario() 
+    public VistaUsuario(Sistema sistema) 
     {
         this.sc = new Scanner(System.in);
+        this.sistema = sistema;
     }
+
 
     public int IniciarVistaUsuario() 
     {
@@ -198,9 +200,7 @@ public class VistaUsuario
         return this.correo;
     }
 
-    public void setSistema(Sistema sistema) {
-        this.sistema = sistema;
-    }
+
     
     public void reclamarObjetoUI() 
     {
