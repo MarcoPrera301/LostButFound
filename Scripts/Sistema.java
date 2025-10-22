@@ -98,6 +98,12 @@ public class Sistema {
             return;
         }
 
+        if (!login) 
+        {
+        vistaUsuario.mensaje("No se pudo iniciar sesión. Saliendo del sistema.");
+        return;
+        }
+
         boolean cierre = false;
 
         while (!cierre) 
@@ -164,7 +170,7 @@ public class Sistema {
                 else if(opcion==6)  
                 {
                     if (!tienePermiso(usuarioActual, ACCION_ELIMINAR_OBJETOS)) {
-                        System.out.println("No tienes permiso para eliminar objetos.");
+                        uiInfo("No tienes permiso para eliminar objetos.");
                     } else {
                         vistaUsuario.eliminarObjetoUI();
                     }
@@ -242,7 +248,7 @@ public class Sistema {
 
         if (registrarObjeto(objeto)) {
             boolean okCSV = insertarObjetoCSV(objeto);
-            if (!okCSV) { System.out.println("Advertencia: objeto en memoria pero fallo CSV"); }
+            if (!okCSV) { uiInfo("Advertencia: objeto en memoria pero fallo CSV"); }
             return "Objeto registrado exitosamente.";
         } else {
             return "Error al registrar el objeto. Por favor, intente de nuevo.";
@@ -261,7 +267,7 @@ public class Sistema {
                 }
             }
         } catch (IOException e) {
-            System.err.println("No se pudo preparar el CSV de usuarios: " + e.getMessage());
+            uiError("No se pudo preparar el CSV de usuarios: " + e.getMessage());
         }
     }
 
@@ -277,12 +283,13 @@ public class Sistema {
                 }
             }
         } catch (IOException e) {
-            System.err.println("No se pudo preparar el CSV de objetos: " + e.getMessage());
+            uiError("No se pudo preparar el CSV de objetos: " + e.getMessage());
         }
     }
     // ====== Lectura de objetos desde CSV (sin UI) ======
     /** Lee todos los objetos desde data/objetos.csv. No imprime nada (UI va en VistaUsuario). */
-    public List<Objeto> leerObjetosDesdeCSV() {
+    public List<Objeto> leerObjetosDesdeCSV() 
+    {
         List<Objeto> lista = new ArrayList<>();
         try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
             String linea = br.readLine(); // cabecera
@@ -293,7 +300,7 @@ public class Sistema {
                 if (p.length < 6) continue; // mínimo hasta lugarEncontrado
                 String id              = p[0].trim();
                 int idInt;
-                try { idInt = Integer.parseInt(id); } catch (NumberFormatException e) { System.err.println("ID inválido en objetos.csv: " + id); continue; }
+                try { idInt = Integer.parseInt(id); } catch (NumberFormatException e) { uiError("ID inválido en objetos.csv: " + id); continue; }
                 String descripcion     = p[1];
                 String tipo            = p[2];
                 String estado          = p[3];
@@ -301,14 +308,16 @@ public class Sistema {
                 String lugar           = (p.length > 5) ? p[5] : "";
                 // fechaDevolucion (p[6]) y usuarioQueReclama (p[8]) son opcionales para construir la instancia básica
                 String reportadoPor    = (p.length > 7) ? p[7] : "";
-                Objeto o = new Objeto(descripcion, tipo, estado, fechaEn, lugar, idInt, reportadoPor);
-                // Nota: Si luego necesitas aplicar fechaDevolucion/usuarioQueReclama, agrega setters aquí.
+                String usuarioQueReclama = (p.length > 8 && !p[8].isBlank()) ? p[8] : null; // ← NUEVO: leer usuarioQueReclama
+                
+                // Usar el constructor actualizado que incluye usuarioQueReclama
+                Objeto o = new Objeto(descripcion, tipo, estado, fechaEn, lugar, idInt, reportadoPor, usuarioQueReclama);
                 lista.add(o);
             }
         } catch (IOException ex) {
-            System.err.println("Error leyendo objetos.csv: " + ex.getMessage());
+            uiError("Error leyendo objetos.csv: " + ex.getMessage());
         } catch (Exception ex) {
-            System.err.println("Error parseando objetos.csv: " + ex.getMessage());
+            uiError("Error parseando objetos.csv: " + ex.getMessage());
         }
         return lista;
     }
@@ -346,7 +355,7 @@ public class Sistema {
                 }
             }
         } catch (IOException ex) {
-            System.err.println("Error leyendo CSV de usuarios: " + ex.getMessage());
+            uiError("Error leyendo CSV de usuarios: " + ex.getMessage());
         }
         return Optional.empty();
     }
@@ -365,7 +374,7 @@ public class Sistema {
                 }
             }
         } catch (IOException ex) {
-            System.err.println("Error leyendo IDs del CSV: " + ex.getMessage());
+            uiError("Error leyendo IDs del CSV: " + ex.getMessage());
         }
         return max + 1;
     }
@@ -380,7 +389,7 @@ public class Sistema {
         }
 
         if (buscarUsuarioPorCorreoCSV(correo).isPresent()) {
-            System.err.println("Ya existe un usuario con ese correo.");
+            uiError("Ya existe un usuario con ese correo.");
             return false;
         }
 
@@ -401,16 +410,35 @@ public class Sistema {
             bw.newLine();
             return true;
         } catch (IOException ex) {
-            System.err.println("Error escribiendo CSV de usuarios: " + ex.getMessage());
+            uiError("Error escribiendo CSV de usuarios: " + ex.getMessage());
             return false;
         }
     }
 
         // Autenticación básica (texto plano)
-        public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) { //cambia a un if else normal
+        public Optional<Usuario> autenticarUsuarioCSV(String correo, String contrasenaPlano) 
+        {
             Optional<Usuario> u = buscarUsuarioPorCorreoCSV(correo);
             if (u.isPresent() && u.get().getContrasena().equals(contrasenaPlano)) {
-                return u;
+                Usuario usuario = u.get();
+                
+                // Si es ADMIN, crear instancia de Administrador
+                if (usuario.esAdmin()) {
+                    Administrador admin = new Administrador(
+                        usuario.getIdUsuario(),
+                        usuario.getNombre(),
+                        usuario.getCorreo(),
+                        usuario.getContrasena(),
+                        "ADMIN" + usuario.getIdUsuario()
+                    );
+                    this.usuarioActual = admin;
+                    this.usuarioEnSesion = admin;
+                    return Optional.of(admin);
+                } else {
+                    this.usuarioActual = usuario;
+                    this.usuarioEnSesion = usuario;
+                    return u;
+                }
             }
             return Optional.empty();
         }
@@ -425,7 +453,7 @@ public class Sistema {
                     if (!linea.isBlank()) return true;
                 }
             } catch (IOException e) {
-                System.err.println("Error verificando usuarios CSV: " + e.getMessage());
+                uiError("Error verificando usuarios CSV: " + e.getMessage());
             }
             return false;
         }
@@ -437,7 +465,7 @@ public class Sistema {
                 if (ok) {
                     vistaUsuario.mensaje(" Admin por defecto creado: admin@uvg.edu.gt / 1234");
                 } else {
-                    System.err.println(" No se pudo crear el admin por defecto.");
+                    uiError(" No se pudo crear el admin por defecto.");
                 }
             }
         }
@@ -477,7 +505,7 @@ public class Sistema {
             Files.write(p, sb.toString().getBytes(StandardCharsets.UTF_8), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
             return true;
         } catch (Exception e) {
-            System.err.println("Error reescribiendo usuarios.csv: " + e.getMessage());
+            uiError("Error reescribiendo usuarios.csv: " + e.getMessage());
             return false;
         }
     }
@@ -517,7 +545,7 @@ public class Sistema {
         if (solicitante == null) return false;
 
         if (!tienePermiso(solicitante, ACCION_RECLAMAR_OBJETO)) {
-            System.err.println("No tiene permiso para reclamar objetos.");
+            uiError("No tiene permiso para reclamar objetos.");
             return false;
         }
 
@@ -535,14 +563,14 @@ public class Sistema {
             }
         }
         if (objetivo == null) {
-            System.err.println("Objeto no encontrado para id: " + idObjeto);
+            uiError("Objeto no encontrado para id: " + idObjeto);
             return false;
         }
 
 
         boolean identidadOk = validarIdentidadParaReclamo(solicitante, correoConfirmado, carnetConfirmado);
         if (!identidadOk) {
-            System.err.println("Validación de identidad fallida.");
+            uiError("Validación de identidad fallida.");
             return false;
         }
 
@@ -636,7 +664,7 @@ public void canjearPremio(Usuario usuario) {
             bw.newLine();
             return true;
         } catch (java.io.IOException ex) {
-            System.err.println("Error escribiendo objetos.csv: " + ex.getMessage());
+            uiError("Error escribiendo objetos.csv: " + ex.getMessage());
             return false;
         }
     }
@@ -725,7 +753,7 @@ public void canjearPremio(Usuario usuario) {
     public boolean eliminarObjetoPorId(int idObjeto) {
         Usuario enSesion = getUsuarioActual();
         if (!tienePermiso(enSesion, ACCION_GESTION_OBJETOS)) {
-            System.out.println("No tienes permiso para eliminar objetos.");
+            uiInfo("No tienes permiso para eliminar objetos.");
             return false;
         }
 
@@ -739,13 +767,13 @@ public void canjearPremio(Usuario usuario) {
                 Object val = fid.get(o);
                 if (val instanceof Integer && ((Integer) val) == idObjeto) {
                     it.remove();
-                    System.out.println("Objeto eliminado: " + idObjeto);
+                    uiInfo("Objeto eliminado: " + idObjeto);
                     return true;
                 }
             } catch (Exception ignore) {}
         }
 
-        System.out.println("No se encontró el objeto con id: " + idObjeto);
+        uiInfo("No se encontró el objeto con id: " + idObjeto);
         return false;
     }
 
@@ -756,4 +784,226 @@ public void canjearPremio(Usuario usuario) {
         }
     }
     public VistaUsuario getVistaUsuario() { return this.vistaUsuario; }
+
+    public static final int LIMITE_DIAS_NO_RECLAMADO = 180;
+
+        public List<Objeto> obtenerCandidatosDonacion(int limiteDias) {
+        List<Objeto> out = new ArrayList<>();
+        if (listaObjetos == null) return out;
+        for (Objeto o : listaObjetos) {
+            try {
+                if (o != null && o.esCandidatoNoReclamado(limiteDias)) {
+                    out.add(o);
+                }
+            } catch (Exception ignore) {}
+        }
+        return out;
+    }
+
+        public int donarNoReclamados(int limiteDias, Usuario actor) {
+        if (actor == null || !actor.esAdmin()) {
+            uiError("Permiso denegado: se requiere rol ADMIN para donar objetos no reclamados.");
+            return 0;
+        }
+        List<Objeto> candidatos = obtenerCandidatosDonacion(limiteDias);
+        if (candidatos.isEmpty()) return 0;
+
+        LocalDate hoy = LocalDate.now();
+        int cambios = 0;
+        for (Objeto o : candidatos) {
+            try {
+                o.setEstadoDonado(hoy);
+                cambios++;
+            } catch (Exception ignore) {}
+        }
+        boolean ok = reescribirObjetosCSV();
+        if (!ok) {
+            uiError("Advertencia: no se pudo persistir objetos donados en objetos.csv");
+        }
+        return cambios;
+    }
+
+    /** Versión práctica con el límite de 6 meses (180 días). */
+    public int donarNoReclamadosSemestre(Usuario actor) 
+    {
+        return donarNoReclamados(LIMITE_DIAS_NO_RECLAMADO, actor);
+    }
+
+public boolean reclamarObjeto(int idObjeto, Usuario usuarioReclamante) 
+{
+    if (usuarioReclamante == null || !usuarioReclamante.puedeReclamarObjetos()) {
+        uiError("No tienes permisos para reclamar objetos.");
+        return false;
+    }
+    
+    // Buscar el objeto EN LA LISTA y modificarlo directamente
+    Objeto objetoEncontrado = null;
+    for (Objeto obj : listaObjetos) {
+        if (obj != null && obj.getId() == idObjeto) {
+            objetoEncontrado = obj;
+            break;
+        }
+    }
+    
+    if (objetoEncontrado == null) {
+        uiError("No se encontró el objeto con ID: " + idObjeto);
+        return false;
+    }
+    
+    if (!Objeto.ESTADO_ENCONTRADO.equals(objetoEncontrado.getEstado())) {
+        uiError("Este objeto no está disponible para reclamar. Estado actual: " + objetoEncontrado.getEstado());
+        return false;
+    }
+    
+    // Modificar el objeto DIRECTAMENTE en la lista
+    objetoEncontrado.setEstado(Objeto.ESTADO_PENDIENTE_VALIDACION);
+    objetoEncontrado.setUsuarioQueReclama(usuarioReclamante.getCorreo());
+    
+    System.out.println("DEBUG: Objeto actualizado - ID: " + objetoEncontrado.getId() + 
+                    ", Estado: " + objetoEncontrado.getEstado() + 
+                    ", Usuario: " + objetoEncontrado.getUsuarioQueReclama());
+    
+    // GUARDAR EL CAMBIO EN EL CSV
+    boolean guardado = reescribirObjetosCSV();
+    if (!guardado) {
+        uiError("Error al guardar el reclamo en el sistema.");
+        return false;
+    }
+    
+    uiInfo("Reclamo enviado para validación. Un administrador revisará tu solicitud.");
+    return true;
+}
+
+    public boolean validarReclamoObjeto(int idObjeto, Usuario administrador) {
+    if (administrador == null || !administrador.puedeValidarReclamos()) {
+        uiError("No tienes permisos para validar reclamos.");
+        return false;
+    }
+    
+    // Buscar el objeto EN LA LISTA directamente
+    Objeto objetoEncontrado = null;
+    for (Objeto obj : listaObjetos) {
+        if (obj != null && obj.getId() == idObjeto) {
+            objetoEncontrado = obj;
+            break;
+        }
+    }
+    
+    if (objetoEncontrado == null) {
+        uiError("No se encontró el objeto con ID: " + idObjeto);
+        return false;
+    }
+    
+    if (!Objeto.ESTADO_PENDIENTE_VALIDACION.equals(objetoEncontrado.getEstado())) {
+        uiError("Este objeto no tiene reclamos pendientes de validación.");
+        return false;
+    }
+    
+    String usuarioReclamante = objetoEncontrado.getUsuarioQueReclama();
+    if (usuarioReclamante == null || usuarioReclamante.isEmpty()) {
+        uiError("Error: No se encontró información del usuario que reclamó este objeto.");
+        return false;
+    }
+    
+    // Modificar el objeto DIRECTAMENTE en la lista
+    objetoEncontrado.setEstadoRecuperado(LocalDate.now(), usuarioReclamante);
+    
+    System.out.println("DEBUG: Validación completada - ID: " + objetoEncontrado.getId() + 
+                    ", Estado: " + objetoEncontrado.getEstado() + 
+                    ", Usuario: " + objetoEncontrado.getUsuarioQueReclama());
+    
+    // GUARDAR EL CAMBIO EN EL CSV
+    boolean guardado = reescribirObjetosCSV();
+    if (!guardado) {
+        uiError("Error al guardar la validación en el sistema.");
+        return false;
+    }
+    
+    uiInfo("Reclamo validado exitosamente. Objeto marcado como reclamado por: " + usuarioReclamante);
+    return true;
+}
+
+    private Objeto buscarObjetoPorId(int idObjeto) 
+    {
+    for (Objeto obj : listaObjetos) {
+        if (obj != null && obj.getId() == idObjeto) {
+            return obj;
+        }
+    }
+    return null;
+    }
+
+    public List<Objeto> obtenerObjetosPendientesValidacion() 
+    {
+        List<Objeto> pendientes = new ArrayList<>();
+        for (Objeto obj : listaObjetos) {
+            if (obj != null && Objeto.ESTADO_PENDIENTE_VALIDACION.equals(obj.getEstado())) {
+                System.out.println("DEBUG: Objeto pendiente - ID: " + obj.getId() + ", Usuario: " + obj.getUsuarioQueReclama()); // Para debugging
+                pendientes.add(obj);
+            }
+        }
+        return pendientes;
+    }
+
+    public Usuario obtenerUsuarioActualPorCorreo(String correo) 
+    {
+    Optional<Usuario> usuarioOpt = buscarUsuarioPorCorreoCSV(correo);
+    return usuarioOpt.orElse(null);
+    }
+
+
+        private boolean reescribirObjetosCSV() {
+        Path p = rutaCSVObjetos;
+        String header = "id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama";
+        StringBuilder sb = new StringBuilder(header).append("\n");
+        if (listaObjetos != null) {
+            for (Objeto o : listaObjetos) {
+                if (o == null) continue;
+                String id              = String.valueOf(o.getId());
+                String descripcion     = esc(o.getDescripcion());
+                String tipo            = esc(o.getTipo());
+                String estado          = esc(o.getEstado());
+                String fechaEncontrado = esc(fechaStr(o.getFechaEncontrado()));
+                String lugar           = esc(o.getLugarEncontrado());
+                String fechaDev        = esc(fechaStr(o.getFechaDevolucion()));
+                String reportadoPor    = esc(o.getReportadoPor());
+                String usuarioReclama  = esc(o.getUsuarioQueReclama());
+
+                sb.append(id).append(",")
+                  .append(descripcion).append(",")
+                  .append(tipo).append(",")
+                  .append(estado).append(",")
+                  .append(fechaEncontrado).append(",")
+                  .append(lugar).append(",")
+                  .append(fechaDev).append(",")
+                  .append(reportadoPor).append(",")
+                  .append(usuarioReclama).append("\n");
+            }
+        }
+        try {
+            Files.createDirectories(p.getParent());
+            Files.write(p, sb.toString().getBytes(StandardCharsets.UTF_8),
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+            return true;
+        } catch (Exception e) {
+            uiError("Error reescribiendo objetos.csv: " + e.getMessage());
+            return false;
+        }
+    }
+
+    /** Redirige mensajes informativos a la vista (si existe). */
+    private void uiInfo(String msg) {
+        if (this.vistaUsuario != null) {
+            this.vistaUsuario.mensaje(msg);
+        }
+        // No System.out.println aquí por regla del proyecto.
+    }
+
+    /** Redirige mensajes de error a la vista (si existe). */
+    private void uiError(String msg) {
+        if (this.vistaUsuario != null) {
+            this.vistaUsuario.error(msg);
+        }
+    }
+
 }

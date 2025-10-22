@@ -52,6 +52,19 @@ public class VistaUsuario
         return opcion;
     }
 
+    public int menuReclamos() 
+    {
+    System.out.println("\n--- Validación y Reclamo de Objetos ---");
+    System.out.println("1. Reclamar objeto");
+    System.out.println("2. Validar reclamo (Solo administradores)");
+    System.out.println("3. Volver al menú principal");
+    System.out.print("Seleccione una opción: ");
+    
+    int opcion = sc.nextInt();
+    sc.nextLine();
+    return opcion;
+    }
+
     // filtros 
     public int verFiltros() 
     {
@@ -116,19 +129,20 @@ public class VistaUsuario
     /** Pide credenciales y autentica contra el CSV usando Sistema */
     public boolean mostrarLoginConsola(Sistema sistema) 
     {
-    String correo = solicitarCorreo();
-    String contrasena = solicitarContrasena();
-    this.correo = correo;
-    Optional<Usuario> usuarioOpcional = sistema.autenticarUsuarioCSV(correo, contrasena);
-    
-    if (usuarioOpcional.isPresent()) {
-        Usuario u = usuarioOpcional.get();
-        System.out.println("Bienvenido, " + u.getNombre() + " (" + u.getRol() + ")");
-        return true; 
-    } else {
-        System.out.println("Credenciales inválidas.");
-        return false; 
-    }
+        String correo = solicitarCorreo();
+        String contrasena = solicitarContrasena();
+        this.correo = correo;
+        Optional<Usuario> usuarioOpcional = sistema.autenticarUsuarioCSV(correo, contrasena);
+        
+        if (usuarioOpcional.isPresent()) {
+            Usuario u = usuarioOpcional.get();
+            sistema.setUsuarioActual(u); // ← ESTABLECER USUARIO ACTUAL
+            System.out.println("Bienvenido, " + u.getNombre() + " (" + u.getRol() + ")");
+            return true; 
+        } else {
+            System.out.println("Credenciales inválidas.");
+            return false; 
+        }
     }
 
     // ----- Solicitud de datos para crear Objeto -----
@@ -187,56 +201,109 @@ public class VistaUsuario
     public void setSistema(Sistema sistema) {
         this.sistema = sistema;
     }
-    public void reclamarObjetoUI() {
-        System.out.println("== Reclamo de objeto ==");
+    
+    public void reclamarObjetoUI() 
+    {
+        int opcionReclamo;
+        
+        do {
+            opcionReclamo = menuReclamos();
+            
+            switch (opcionReclamo) {
+                case 1:
+                    reclamarObjetoComoUsuario();
+                    break;
+                case 2:
+                    validarReclamoComoAdmin();
+                    break;
+                case 3:
+                    System.out.println("Volviendo al menú principal...");
+                    break;
+                default:
+                    System.out.println("Opción no válida.");
+                    break;
+            }
+        } while (opcionReclamo != 3);
+    }
+
+    private void reclamarObjetoComoUsuario() 
+    {
+        System.out.println("== Reclamo de Objeto ==");
+        
+        // Mostrar objetos disponibles para reclamar
+        List<Objeto> objetosDisponibles = sistema.filtrarPorEstado(
+            sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_ENCONTRADO
+        );
+        
+        if (objetosDisponibles.isEmpty()) {
+            System.out.println("No hay objetos disponibles para reclamar.");
+            return;
+        }
+        
+        mostrarObjetos(objetosDisponibles);
+        
         System.out.print("ID del objeto a reclamar: ");
         int idObj = sc.nextInt();
         sc.nextLine();
-
-        System.out.print("Confirma tu correo institucional: ");
-        String correoConfirmado = sc.nextLine().trim();
-
-        System.out.print("Ingresa tu carnet (o 0 si no aplica): ");
-        int carnetConfirmado = sc.nextInt();
-        sc.nextLine();
-
-        System.out.print("Correo para autenticar: ");
-        String correoLogin = sc.nextLine().trim();
-        System.out.print("Contraseña: ");
-        String passLogin = sc.nextLine().trim();
-
-        Usuario u = sistema.getUsuarioActual();
-        if (u == null) {
-            final java.util.Scanner in = new java.util.Scanner(System.in);
-
-            System.out.print("Correo para autenticar: ");
-            correoLogin = in.nextLine().trim();
-
-            System.out.print("Contraseña: ");
-            passLogin = in.nextLine().trim();
-
-            java.util.Optional<Usuario> maybe = sistema.autenticarUsuarioCSV(correoLogin, passLogin);
-            if (maybe.isEmpty()) {
-                System.out.println("Credenciales inválidas.");
-                return;
-            }
-            u = maybe.get();
-            sistema.setUsuarioActual(u);
+        
+        Usuario usuarioActual = sistema.getUsuarioActual();
+        if (usuarioActual == null) {
+            System.out.println("Debe iniciar sesión para reclamar objetos.");
+            return;
         }
         
-        boolean ok = sistema.reclamarObjetoConValidacion(
-            idObj,
-            u,
-            correoConfirmado,
-            (carnetConfirmado == 0 ? null : Integer.valueOf(carnetConfirmado))
-            );
-
-            if (ok) {
-                System.out.println("Reclamo realizado.");
-            } else {
-                System.out.println("No se pudo realizar el reclamo.");
-            }
+        boolean resultado = sistema.reclamarObjeto(idObj, usuarioActual);
+        if (resultado) {
+            System.out.println("Reclamo enviado exitosamente.");
+        } else {
+            System.out.println("No se pudo procesar el reclamo.");
         }
+    }
+
+    public void validarReclamoComoAdmin() 
+    {
+        System.out.println("== Validación de Reclamos ==");
+        
+        Usuario usuarioActual = sistema.getUsuarioActual();
+        if (usuarioActual == null || !usuarioActual.puedeValidarReclamos()) {
+            System.out.println("Acceso denegado. Solo administradores pueden validar reclamos.");
+            return;
+        }
+        
+        List<Objeto> pendientes = sistema.obtenerObjetosPendientesValidacion();
+        
+        if (pendientes.isEmpty()) {
+            System.out.println("No hay reclamos pendientes de validación.");
+            return;
+        }
+        
+        System.out.println("\n--- Reclamos Pendientes de Validación ---");
+        for (Objeto obj : pendientes) {
+            System.out.println("ID: " + obj.getId() + 
+                        ", Descripción: " + obj.getDescripcion() + 
+                        ", Tipo: " + obj.getTipo() +
+                        ", Reclamado por: " + (obj.getUsuarioQueReclama() != null ? obj.getUsuarioQueReclama() : "NO REGISTRADO") +
+                        ", Estado: " + obj.getEstado());
+        }
+        
+        System.out.print("ID del objeto a validar: ");
+        int idObj = sc.nextInt();
+        sc.nextLine();
+        
+        System.out.print("¿Confirmar validación? (Si/No): ");
+        String confirmacion = sc.nextLine().trim();
+        
+        if (confirmacion.equalsIgnoreCase("Si")) {
+            boolean resultado = sistema.validarReclamoObjeto(idObj, usuarioActual);
+            if (resultado) {
+                System.out.println("Reclamo validado exitosamente.");
+            } else {
+                System.out.println("No se pudo validar el reclamo.");
+            }
+        } else {
+            System.out.println("Validación cancelada.");
+        }
+    }
 
 
     public void mostrarPremiosDisponibles(List<Premio> premios) {
@@ -314,4 +381,10 @@ public class VistaUsuario
             System.out.println("Tienes permisos de administrador.");
         }
     }
+
+    /** Mensajes de error provenientes del sistema. */
+    public void error(String mensaje) {
+        System.err.println(mensaje);
+    }
+
 }

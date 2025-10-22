@@ -1,16 +1,16 @@
-public class Administrador
+public class Administrador extends Usuario
 {
-    private String nombre;
+    
     private String adminID;
-    private boolean permiso = true;
-    public Administrador(String nombre, String adminId) {
-        this.nombre = nombre;
-        this.adminID = adminId;
-        this.permiso = true;
+    
+    public Administrador(int idUsuario, String nombre, String correo, String contrasena, String adminID) {
+        super(idUsuario, nombre, correo, contrasena, "ADMIN");
+        this.adminID = adminID;
     }
-    public String getNombre() { return nombre; }
+
+    
     public String getAdminId() { return adminID; }
-    public boolean getPermiso() { return permiso; }
+    
 
     private static String esc(String s) {
         if (s == null) return "";
@@ -18,6 +18,7 @@ public class Administrador
         if (v.contains(",") || v.contains("\"") || v.contains("\n")) return "\"" + v + "\"";
         return v;
     }
+
     private static String unesc(String s) {
         if (s == null) return "";
         String t = s;
@@ -26,6 +27,7 @@ public class Administrador
         }
         return t;
     }
+
     private static String[] splitCsv(String line, int cols) {
         String[] out = new String[cols];
         int idx = 0; StringBuilder cur = new StringBuilder(); boolean inQ = false;
@@ -41,10 +43,23 @@ public class Administrador
         while (idx < cols) out[idx++] = "";
         return out;
     }
-    public String toCsv() { return String.join(",", esc(nombre), esc(adminID), "true"); }
+
+    public String toCsv() 
+    { 
+        return String.join(",", esc(getNombre()), esc(adminID), "true"); 
+    }
+
     public static String csvHeader() { return "nombre,adminId,permiso"; }
-    public static Administrador fromCsv(String line) {
-        String[] p = splitCsv(line, 3);
-        return new Administrador(unesc(p[0]), unesc(p[1]));
+
+    public static Administrador fromCsv(String line) 
+    {
+    String[] p = splitCsv(line, 3);
+    // Usar valores por defecto para los campos del CSV antiguo
+    return new Administrador(1, unesc(p[0]), "admin@uvg.edu.gt", "temp123", unesc(p[1]));
+    }
+
+    @Override
+    public boolean puedeValidarReclamos() {
+        return true; // Los administradores pueden validar reclamos
     }
 }

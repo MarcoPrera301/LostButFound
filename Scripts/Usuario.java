@@ -33,6 +33,7 @@ public class Usuario {
     public String getContrasena() { return contrasena; }
     public String getRol() { return rol; }
 
+
     public boolean esAdmin() {
         return this.rol != null && this.rol.trim().equalsIgnoreCase("ADMIN");
     }
@@ -53,5 +54,15 @@ public class Usuario {
 
     public void restarPuntos(int cantidad) {
         this.puntos = Math.max(0, this.puntos - cantidad);
+    }
+
+    public boolean puedeReclamarObjetos() {
+        return true; // Por defecto, todos los usuarios pueden reclamar
+    }
+    
+    
+    public boolean puedeValidarReclamos() 
+    {
+        return this.esAdmin();
     }
 }

@@ -6,6 +6,7 @@ public class Objeto
     public static final String ESTADO_ENCONTRADO = "encontrado";
     public static final String ESTADO_RECUPERADO = "recuperado";
     public static final String ESTADO_DONADO     = "donado";
+    public static final String ESTADO_PENDIENTE_VALIDACION = "pendiente_validacion";
 
 
 private String descripcion;
@@ -18,7 +19,7 @@ private int id;
 private String reportadoPor;
 private String usuarioQueReclama;
 
-    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, int id, String reportadoPor) 
+    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, int id, String reportadoPor, String usuarioQueReclama) 
     {
         this.descripcion = descripcion;
         this.tipo = tipo;
@@ -27,7 +28,12 @@ private String usuarioQueReclama;
         this.lugarEncontrado = lugarEncontrado;
         this.id = id;
         this.reportadoPor = reportadoPor;
-        this.usuarioQueReclama = null; 
+        this.usuarioQueReclama = usuarioQueReclama; 
+    }
+
+    public Objeto(String descripcion, String tipo, String estado, LocalDate fechaEncontrado, String lugarEncontrado, int id, String reportadoPor) 
+    {
+    this(descripcion, tipo, estado, fechaEncontrado, lugarEncontrado, id, reportadoPor, null);
     }
 
     public static Objeto nuevoPerdido(int id, String descripcion, String tipo, String reportadoPor) {
@@ -44,6 +50,7 @@ private String usuarioQueReclama;
         this.fechaDevolucion = fecha; 
         this.usuarioQueReclama = usuarioQueReclama;
     }
+
 
 
     public String getDescripcion() { return descripcion; }
@@ -70,7 +77,7 @@ private String usuarioQueReclama;
     public String getReportadoPor() { return reportadoPor; }
     public void setReportadoPor(String reportadoPor) { this.reportadoPor = reportadoPor; }
 
-    public String getUsuarioQueReclama() { return usuarioQueReclama; }
+    public String getUsuarioQueReclama() { return this.usuarioQueReclama; }
     public void setUsuarioQueReclama(String usuarioQueReclama) { this.usuarioQueReclama = usuarioQueReclama; }
 
 public boolean esValido() {
@@ -88,6 +95,7 @@ public boolean esValido() {
         case ESTADO_RECUPERADO -> fechaDevolucion != null
             && usuarioQueReclama != null && !usuarioQueReclama.isEmpty();
         case ESTADO_DONADO -> true;
+        case ESTADO_PENDIENTE_VALIDACION -> usuarioQueReclama != null && !usuarioQueReclama.isEmpty();
         default -> false;
     };
 }
