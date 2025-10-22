@@ -32,7 +32,7 @@ public class Sistema {
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
     private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
 
-    // NUEVO: manejador dedicado para usuarios.csv
+    // Persistencia de usuarios separada
     private final UsuariosCSV usuariosCSV;
 
     // ===== Getters/Setters básicos =====
@@ -52,7 +52,7 @@ public class Sistema {
         return false;
     }
 
-    // Main te pide esto
+    // Main la usa
     public void setVistaUsuario(VistaUsuario v) {
         this.vistaUsuario = v;
     }
@@ -75,26 +75,13 @@ public class Sistema {
         registrarPremio(new Premio("Descuento Cafetería", "10% en comida", 50));
     }
 
+    // ====== Flujo principal ======
     public void iniciarSistema() {
-        // Tu Vista maneja la UI. Aquí no imprimimos.
         int opcionInicio = vistaUsuario.IniciarVistaUsuario();
 
         boolean login = false;
-        if (opcionInicio == 1) { // Login
-            String correo = vistaUsuario.solicitarCorreo();
-            String contrasena = vistaUsuario.solicitarContrasena();
-            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo, contrasena);
-            if (userOpt.isPresent()) {
-                Usuario u = userOpt.get();
-                usuarioActual = u;
-                usuarioEnSesion = u;
-                vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
-                login = true;
-            } else {
-                vistaUsuario.mensaje("Credenciales inválidas.");
-            }
-        } else if (opcionInicio == 2) { // Registro
-            // Vista no tiene solicitarNombre(), usa solicitarNombrePersona()
+
+        if (opcionInicio == 1) { // 1 = REGISTRARSE
             String nombre = vistaUsuario.solicitarNombrePersona();
             String correo = vistaUsuario.solicitarCorreo();
             String contrasena = vistaUsuario.solicitarContrasena();
@@ -107,8 +94,9 @@ public class Sistema {
                 vistaUsuario.mensaje("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
             }
 
+            // Ahora 2 = INICIAR SESIÓN
             int opcion = vistaUsuario.IniciarVistaUsuario();
-            if (opcion == 1) {
+            if (opcion == 2) {
                 String correoL = vistaUsuario.solicitarCorreo();
                 String contrasenaL = vistaUsuario.solicitarContrasena();
                 Optional<Usuario> lu = autenticarUsuarioCSV(correoL, contrasenaL);
@@ -122,6 +110,21 @@ public class Sistema {
             } else {
                 vistaUsuario.mensaje("Opción inválida. Saliendo...");
                 return;
+            }
+
+        } else if (opcionInicio == 2) { // 2 = INICIAR SESIÓN
+            String correo = vistaUsuario.solicitarCorreo();
+            String contrasena = vistaUsuario.solicitarContrasena();
+
+            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo, contrasena);
+            if (userOpt.isPresent()) {
+                Usuario u = userOpt.get();
+                usuarioActual = u;
+                usuarioEnSesion = u;
+                vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
+                login = true;
+            } else {
+                vistaUsuario.mensaje("Credenciales inválidas.");
             }
         } else {
             vistaUsuario.mensaje("Opción inválida. Saliendo...");
@@ -142,7 +145,6 @@ public class Sistema {
                 vistaUsuario.mensaje(resultado);
             }
             else if (opcion == 2) {
-                // Delega la visualización a la Vista (también dejo el método verObjetos por compatibilidad)
                 vistaUsuario.mostrarObjetos(listaObjetos);
             }
             else if (opcion == 3) {
@@ -150,12 +152,10 @@ public class Sistema {
                 vistaUsuario.mensaje(resultado);
             }
             else if (opcion == 4) {
-                // La Vista tiene su propio flujo de reclamo con UI y usa los wrappers del sistema
                 vistaUsuario.reclamarObjetoUI();
                 vistaUsuario.mensaje("Operación de reclamo finalizada.");
             }
             else if (opcion == 5) {
-                // La Vista tiene su propio flujo de validación admin y usa los wrappers
                 vistaUsuario.validarReclamoComoAdmin();
                 vistaUsuario.mensaje("Validación finalizada.");
             }
@@ -171,12 +171,12 @@ public class Sistema {
                 vistaUsuario.mensaje(resultado);
             }
             else if (opcion == 9) {
-                // Vista no pide rol explícito: alterno USUARIO/ADMIN para simplificar
+                // Alterna rol simple: ADMIN <-> USUARIO
                 String correo = vistaUsuario.solicitarCorreo();
                 Optional<Usuario> uopt = buscarUsuarioPorCorreoCSV(correo);
                 if (uopt.isPresent()) {
                     String actual = uopt.get().getRol();
-                    String nuevo = ("ADMIN".equalsIgnoreCase(actual)) ? "USUARIO" : "ADMIN";
+                    String nuevo  = ("ADMIN".equalsIgnoreCase(actual)) ? "USUARIO" : "ADMIN";
                     boolean ok = cambiarRolUsuarioCSV(correo, nuevo);
                     vistaUsuario.mensaje(ok ? "Rol actualizado a " + nuevo : "No se pudo actualizar el rol");
                 } else {
@@ -200,12 +200,13 @@ public class Sistema {
         return "Vista en Mantenimiento...  ...";
     }
 
+    // ====== Objetos ======
     private String registrarObjeto1() {
         Objeto objeto = new Objeto(
             vistaUsuario.solicitarDescripcion(),
             vistaUsuario.solicitarTipoObjeto(),
             vistaUsuario.estadoObjeto(),
-            // Vista ya devuelve LocalDate, no parsear
+            // La Vista devuelve LocalDate
             vistaUsuario.solicitarFechaEncontrado(),
             vistaUsuario.solicitarUbicacionObjeto(),
             vistaUsuario.siguienteIdObjeto(),
@@ -246,8 +247,7 @@ public class Sistema {
     }
 
     private String buscarObjeto() {
-        // La Vista no tiene solicitarPatronBusqueda()
-        // Usamos los filtros disponibles: tipo, fechas, ubicación.
+        // La Vista no tiene solicitarPatronBusqueda(); usamos filtros existentes
         String tipo = vistaUsuario.filtroTipo();
         LocalDate f1 = vistaUsuario.filtroFecha1();
         LocalDate f2 = vistaUsuario.filtroFecha2();
@@ -277,59 +277,7 @@ public class Sistema {
         return "Búsqueda finalizada. Total: " + resultados.size();
     }
 
-    private String reclamarObjeto() {
-        // Esta versión delega el flujo a la Vista (que ya sabe pedir ID y usa los wrappers)
-        vistaUsuario.reclamarObjetoUI();
-        return "Operación de reclamo finalizada.";
-    }
-
-    private String validarReclamos() {
-        // Delegamos en la Vista; y en los wrappers validamos lógica sin solicitarCarnet()
-        vistaUsuario.validarReclamoComoAdmin();
-        return "Validación finalizada.";
-    }
-
-    private Usuario buscarUsuarioPorCorreoEnMemoria(String correo) {
-        if (correo == null) return null;
-        for (Usuario u : listaUsuarios) {
-            if (u == null) continue;
-            if (correo.equalsIgnoreCase(u.getCorreo())) return u;
-        }
-        Optional<Usuario> uCSV = buscarUsuarioPorCorreoCSV(correo);
-        if (uCSV.isPresent()) {
-            Usuario u = uCSV.get();
-            listaUsuarios.add(u);
-            return u;
-        }
-        return null;
-    }
-
-    private String verPremios() {
-        StringBuilder sb = new StringBuilder("Premios disponibles:\n");
-        for (Premio p : listaPremios) {
-            if (p == null) continue;
-            sb.append("- ").append(p.getNombre()).append(": ")
-              .append(p.getDescripcion()).append(" (").append(p.getPuntos()).append(" pts)\n");
-        }
-        return sb.toString();
-    }
-
-    private void registrarPremio(Premio premio) {
-        if (premio != null) listaPremios.add(premio);
-    }
-
-    private String entregarPremio() {
-        if (usuarioActual == null) return "No hay usuario en sesión.";
-        if (!usuarioActual.esAdmin()) return "Solo ADMIN puede entregar premios.";
-        return "Premio entregado (simulado).";
-    }
-
-    private String reporte() {
-        return "Reporte generado (simulado).";
-    }
-
-    // =================== CSV OBJETOS ===================
-
+    // ====== CSV de OBJETOS (permanece en Sistema) ======
     private void asegurarCSVObjetosConCabecera() {
         try {
             Files.createDirectories(rutaCSVObjetos.getParent());
@@ -364,9 +312,15 @@ public class Sistema {
                     String reportadoPor = p[7];
                     String usuarioQueReclama = p[8];
 
-                    Objeto o = new Objeto(descripcion, tipo, estado,
-                            (fechaEncontrado == null || fechaEncontrado.isBlank() ? null : LocalDate.parse(fechaEncontrado)),
-                            lugarEncontrado, id, reportadoPor);
+                    Objeto o = new Objeto(
+                        descripcion,
+                        tipo,
+                        estado,
+                        (fechaEncontrado == null || fechaEncontrado.isBlank() ? null : LocalDate.parse(fechaEncontrado)),
+                        lugarEncontrado,
+                        id,
+                        reportadoPor
+                    );
 
                     if (fechaDevolucion != null && !fechaDevolucion.isBlank()) {
                         o.setFechaDevolucion(LocalDate.parse(fechaDevolucion));
@@ -451,8 +405,7 @@ public class Sistema {
         }
     }
 
-    // =================== USUARIOS (con UsuariosCSV) ===================
-
+    // ====== Usuarios (con UsuariosCSV) ======
     private void crearAdminPorDefectoSiVacio() {
         if (!hayUsuariosCSV()) {
             boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
@@ -487,12 +440,12 @@ public class Sistema {
     public boolean cambiarRolUsuarioCSV(String correoInstitucional, String nuevoRol) {
         if (correoInstitucional == null || nuevoRol == null) return false;
 
-        // 1) Buscar en memoria
+        // Buscar en memoria
         Usuario target = null;
         for (Usuario u : listaUsuarios) {
             if (u != null && correoInstitucional.equalsIgnoreCase(u.getCorreo())) {
                 target = u;
-                break; // lo mantienes por ahora
+                break; // mantener simple
             }
         }
         if (target == null) {
@@ -512,10 +465,7 @@ public class Sistema {
         return ok;
     }
 
-    // ============================
-    // ENVOLTORIOS (compatibilidad)
-    // ============================
-
+    // ====== Envoltorios (compatibilidad) ======
     private void asegurarCSVUsuariosConCabecera() {
         usuariosCSV.asegurarArchivoConCabecera();
     }
@@ -532,7 +482,7 @@ public class Sistema {
         return usuariosCSV.hayUsuarios();
     }
 
-    // Antes reescribía usuarios.csv perdiendo 'creadoEn'. Lo dejo por compatibilidad, pero ya NO se usa para cambio de rol.
+    // Antes reescribía usuarios.csv perdiendo 'creadoEn'. Se deja por compatibilidad, pero no se usa para cambio de rol.
     private boolean reescribirUsuariosCSV() {
         try {
             Path p = Paths.get("usuarios.csv");
@@ -556,16 +506,12 @@ public class Sistema {
         }
     }
 
-    // ============================
-    // Métodos que la Vista usa
-    // ============================
-
+    // ====== Métodos que usa la Vista ======
     public List<Objeto> obtenerObjetosEnMemoria() {
         return this.listaObjetos;
     }
 
-    // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    // NUEVO PUBLIC: requerido por VistaUsuario (filtrar por estado)
+    // requerido por VistaUsuario
     public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) {
         List<Objeto> out = new ArrayList<>();
         if (entrada == null) return out;
@@ -577,7 +523,6 @@ public class Sistema {
         }
         return out;
     }
-    // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     public boolean reclamarObjeto(int idObj, Usuario solicitante) {
         if (solicitante == null) return false;
@@ -622,8 +567,22 @@ public class Sistema {
         return removed && reescribirObjetosCSV();
     }
 
-    // ======= utilidades comunes =======
+    // ====== Premios y Reporte (faltaban) ======
+    private void registrarPremio(Premio premio) {
+        if (premio != null) listaPremios.add(premio);
+    }
 
+    private String entregarPremio() {
+        if (usuarioActual == null) return "No hay usuario en sesión.";
+        if (!usuarioActual.esAdmin()) return "Solo ADMIN puede entregar premios.";
+        return "Premio entregado (simulado).";
+    }
+
+    private String reporte() {
+        return "Reporte generado (simulado).";
+    }
+
+    // ====== utilidades simples ======
     private static String[] parseCSVLine(String line) {
         if (line == null) return new String[0];
         ArrayList<String> out = new ArrayList<>();
