@@ -17,6 +17,7 @@ public class Sistema {
     private List<Premio> listaPremios;
     private List<Administrador> listaAdministradores;
     private VistaUsuario vistaUsuario;
+    private ObjetosCSV objetosCSV;
     private Usuario usuarioActual;
     private Usuario usuarioEnSesion;
 
@@ -59,6 +60,9 @@ public class Sistema {
 
     // ====== Constructor ======
     public Sistema() {
+        // Inicializar manejador de CSV de objetos
+        objetosCSV = new ObjetosCSV(rutaCSVObjetos);
+
         listaObjetos         = leerObjetosDesdeCSV();
         listaUsuarios        = new ArrayList<>();
         listaPremios         = new ArrayList<>();
@@ -279,130 +283,23 @@ public class Sistema {
 
     // ====== CSV de OBJETOS (permanece en Sistema) ======
     private void asegurarCSVObjetosConCabecera() {
-        try {
-            Files.createDirectories(rutaCSVObjetos.getParent());
-            if (Files.notExists(rutaCSVObjetos)) {
-                try (BufferedWriter bw = Files.newBufferedWriter(
-                        rutaCSVObjetos, StandardCharsets.UTF_8, StandardOpenOption.CREATE)) {
-                    bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama");
-                    bw.newLine();
-                }
-            }
-        } catch (IOException e) {
-            uiError("Error preparando CSV de objetos: " + e.getMessage());
-        }
+        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
+        objetosCSV.asegurarCSVObjetosConCabecera();
     }
 
     public List<Objeto> leerObjetosDesdeCSV() {
-        List<Objeto> out = new ArrayList<>();
-        try (BufferedReader br = Files.newBufferedReader(rutaCSVObjetos, StandardCharsets.UTF_8)) {
-            String linea = br.readLine(); // cabecera
-            while ((linea = br.readLine()) != null) {
-                if (linea.isBlank()) continue;
-                String[] p = parseCSVLine(linea);
-                if (p.length < 9) continue;
-                try {
-                    int id = Integer.parseInt(p[0].trim());
-                    String descripcion = p[1];
-                    String tipo = p[2];
-                    String estado = p[3];
-                    String fechaEncontrado = p[4];
-                    String lugarEncontrado = p[5];
-                    String fechaDevolucion = p[6];
-                    String reportadoPor = p[7];
-                    String usuarioQueReclama = p[8];
-
-                    Objeto o = new Objeto(
-                        descripcion,
-                        tipo,
-                        estado,
-                        (fechaEncontrado == null || fechaEncontrado.isBlank() ? null : LocalDate.parse(fechaEncontrado)),
-                        lugarEncontrado,
-                        id,
-                        reportadoPor
-                    );
-
-                    if (fechaDevolucion != null && !fechaDevolucion.isBlank()) {
-                        o.setFechaDevolucion(LocalDate.parse(fechaDevolucion));
-                    }
-                    if (usuarioQueReclama != null && !usuarioQueReclama.isBlank()) {
-                        o.setUsuarioQueReclama(usuarioQueReclama);
-                        if ("pendiente_validacion".equalsIgnoreCase(estado)) {
-                            o.setEstado(Objeto.ESTADO_PENDIENTE_VALIDACION);
-                        }
-                    }
-                    out.add(o);
-                } catch (Exception ignore) {
-                    // línea inválida: se ignora
-                }
-            }
-        } catch (IOException e) {
-            uiError("Error leyendo CSV de objetos: " + e.getMessage());
-        }
-        return out;
+        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
+        return objetosCSV.leerObjetosDesdeCSV();
     }
 
     private boolean insertarObjetoCSV(Objeto o) {
-        if (o == null) return false;
-        String fila = String.join(",",
-                String.valueOf(o.getId()),
-                esc(o.getDescripcion()),
-                esc(o.getTipo()),
-                esc(o.getEstado()),
-                esc(o.getFechaEncontrado() == null ? "" : o.getFechaEncontrado().toString()),
-                esc(o.getLugarEncontrado()),
-                esc(o.getFechaDevolucion() == null ? "" : o.getFechaDevolucion().toString()),
-                esc(o.getReportadoPor() == null ? "" : o.getReportadoPor()),
-                esc(o.getUsuarioQueReclama() == null ? "" : o.getUsuarioQueReclama())
-        );
-        try (BufferedWriter bw = Files.newBufferedWriter(
-                rutaCSVObjetos, StandardCharsets.UTF_8,
-                StandardOpenOption.APPEND, StandardOpenOption.CREATE)) {
-            bw.write(fila);
-            bw.newLine();
-            return true;
-        } catch (IOException e) {
-            uiError("Error guardando objeto en CSV: " + e.getMessage());
-            return false;
-        }
+        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
+        return objetosCSV.insertarObjetoCSV(o);
     }
 
     private boolean reescribirObjetosCSV() {
-        Path src = rutaCSVObjetos;
-        Path tmp = src.resolveSibling(src.getFileName().toString() + ".tmp");
-        try (BufferedWriter bw = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8,
-                StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-
-            bw.write("id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama");
-            bw.newLine();
-
-            for (Objeto o : listaObjetos) {
-                if (o == null) continue;
-                bw.write(String.join(",",
-                    String.valueOf(o.getId()),
-                    esc(o.getDescripcion()),
-                    esc(o.getTipo()),
-                    esc(o.getEstado()),
-                    esc(o.getFechaEncontrado() == null ? "" : o.getFechaEncontrado().toString()),
-                    esc(o.getLugarEncontrado()),
-                    esc(o.getFechaDevolucion() == null ? "" : o.getFechaDevolucion().toString()),
-                    esc(o.getReportadoPor() == null ? "" : o.getReportadoPor()),
-                    esc(o.getUsuarioQueReclama() == null ? "" : o.getUsuarioQueReclama())
-                ));
-                bw.newLine();
-            }
-        } catch (IOException e) {
-            uiError("Error preparando escritura de objetos: " + e.getMessage());
-            return false;
-        }
-
-        try {
-            Files.move(tmp, src, java.nio.file.StandardCopyOption.REPLACE_EXISTING, java.nio.file.StandardCopyOption.ATOMIC_MOVE);
-            return true;
-        } catch (IOException e) {
-            uiError("Error finalizando escritura de objetos: " + e.getMessage());
-            return false;
-        }
+        if (objetosCSV == null) objetosCSV = new ObjetosCSV(rutaCSVObjetos);
+        return objetosCSV.reescribirObjetosCSV(listaObjetos);
     }
 
     // ====== Usuarios (con UsuariosCSV) ======
