@@ -4,3 +4,6 @@ id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,repor
 10,caca,documento,recuperado,2025-10-21,CIT,2025-10-22,pep11111@uvg.edu.gt,
 11,lola,electronico,recuperado,2025-10-21,CIT,2025-10-21,pre25468@uvg.edu.gt,pep11111@uvg.edu.gt
 12,yeti azul bonito,recipientes,encontrado,2025-10-22,CIT-618,,,
+13,objeto,documento,perdido,2025-12-12,cit,,,
+14,pachon,documento,perdido,2025-12-12,CIT,,,
+15,estuche,ropa,encontrado,2025-12-12,CIT,,,

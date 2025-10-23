@@ -190,9 +190,14 @@ public class VistaUsuario
         return sc.nextLine();
     }
 
-    public int siguienteIdObjeto() 
-    {
-        return siguienteIdObjeto++;
+    public int siguienteIdObjeto() {
+        if (this.sistema != null) {
+            // Si VistaUsuario ya tiene un Sistema asociado, usa el id que calcula el Sistema
+            return this.sistema.siguienteIdObjeto();
+        }
+        // Si no hay sistema (caso raro), sigue usando su contador interno
+        if (this.siguienteIdObjeto <= 0) this.siguienteIdObjeto = 1;
+        return this.siguienteIdObjeto++;
     }
 
 

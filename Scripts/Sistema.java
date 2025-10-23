@@ -533,6 +533,22 @@ public class Sistema {
         return this.listaObjetos;
     }
 
+
+    //método para calcular id
+    public int siguienteIdObjeto() {
+        int max = 0;
+        if (listaObjetos != null) {
+            for (Objeto o : listaObjetos) {
+                if (o == null) continue;
+                try {
+                    int id = o.getId();
+                    if (id > max) max = id;
+                } catch (Exception ignore) {}
+            }
+        }
+        return max + 1;
+    }
+
     // requerido por VistaUsuario
     public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) 
     {
