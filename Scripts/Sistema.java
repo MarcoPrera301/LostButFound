@@ -232,13 +232,17 @@ public class Sistema {
             vistaUsuario.solicitarUbicacionObjeto(),
             vistaUsuario.siguienteIdObjeto(),
             vistaUsuario.getCorreo()
+
         );
 
-        if (registrarObjeto(objeto)) {
+        if (registrarObjeto(objeto)) 
+        {
             boolean okCSV = insertarObjetoCSV(objeto);
             return okCSV ? "Objeto registrado correctamente y guardado en CSV."
                         : "Objeto registrado, pero error guardando en CSV.";
-        } else {
+        } 
+        else 
+        {
             return "No se pudo registrar el objeto (validación falló).";
         }
     }
@@ -697,10 +701,10 @@ public class Sistema {
         return out.toArray(new String[0]);
     }
 
-    public static String esc(String s) {
-        if (s == null) return "";
-        boolean q = s.contains(",") || s.contains("\"") || s.contains("\n") || s.contains("\r");
-        String out = s.replace("\"", "\"\"");
+    public static String esc(String string) {
+        if (string == null) return "";
+        boolean q = string.contains(",") || string.contains("\"") || string.contains("\n") || string.contains("\r");
+        String out = string.replace("\"", "\"\"");
         return q ? "\"" + out + "\"" : out;
     }
 

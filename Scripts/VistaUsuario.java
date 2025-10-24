@@ -201,8 +201,10 @@ public class VistaUsuario
     }
 
 
-    public String getCorreo() {
-        return this.correo;
+    public String getCorreo() 
+    {
+        Usuario usuario = sistema.getUsuarioActual();
+        return usuario.getCorreo();
     }
 
 
