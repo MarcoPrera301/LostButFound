@@ -20,6 +20,7 @@ public class Sistema {
     private Usuario usuarioActual;
     private Usuario usuarioEnSesion;
 
+    private static final int PUNTOS_REPORTE_OBJETO = 10;
     public static final String ROL_ADMIN      = "ADMIN";
     public static final String ROL_ESTUDIANTE = "ESTUDIANTE";
 
@@ -739,6 +740,11 @@ public class Sistema {
     } else {
         vistaUsuario.mensaje("No tienes suficientes puntos para este premio.");
     }
+    }
+
+    private void otorgarPuntosPorReporte(Usuario usuario, Objeto objeto) {
+        if (usuario == null || objeto == null) return;
+        usuario.sumarPuntos(PUNTOS_REPORTE_OBJETO);
     }
 }
 
