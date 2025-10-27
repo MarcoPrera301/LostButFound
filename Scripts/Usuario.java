@@ -65,4 +65,10 @@ public class Usuario {
     {
         return this.esAdmin();
     }
+
+    public void sumarPuntos(int cantidad) {
+        if (cantidad > 0) {
+            this.puntos += cantidad;
+        }
+    }
 }
