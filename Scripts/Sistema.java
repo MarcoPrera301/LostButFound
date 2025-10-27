@@ -239,13 +239,20 @@ public class Sistema {
         if (registrarObjeto(objeto)) 
         {
             boolean okCSV = insertarObjetoCSV(objeto);
-            return okCSV ? "Objeto registrado correctamente y guardado en CSV."
-                        : "Objeto registrado, pero error guardando en CSV.";
+            if (okCSV) {
+                // Obtener el usuario que reporta: preferimos la sesión actual;
+                // de lo contrario, usamos el "usuarioActual" si tu flujo lo maneja así.
+                Usuario reportero = (getUsuarioEnSesion() != null) ? getUsuarioEnSesion() : getUsuarioActual();
+
+                // Otorgar puntos de forma centralizada
+                otorgarPuntosPorReporte(reportero, objeto);
+
+                return "Objeto registrado correctamente y guardado en CSV.";
+            } else {
+                return "Objeto registrado, pero error guardando en CSV.";
+            }
         } 
-        else 
-        {
-            return "No se pudo registrar el objeto (validación falló).";
-        }
+        return "No se pudo registrar el objeto (validación falló).";
     }
 
     public boolean registrarObjeto(Objeto objeto) {
@@ -742,9 +749,9 @@ public class Sistema {
     }
     }
 
-    private void otorgarPuntosPorReporte(Usuario usuario, Objeto objeto) {
-        if (usuario == null || objeto == null) return;
-        usuario.sumarPuntos(PUNTOS_REPORTE_OBJETO);
-    }
+private void otorgarPuntosPorReporte(Usuario usuario, Objeto objeto) {
+    if (usuario == null || objeto == null) return;
+    usuario.sumarPuntos(PUNTOS_REPORTE_OBJETO);
+}
 }
 
