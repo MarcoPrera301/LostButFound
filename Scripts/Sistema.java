@@ -245,7 +245,7 @@ public class Sistema {
                 Usuario reportero = (getUsuarioEnSesion() != null) ? getUsuarioEnSesion() : getUsuarioActual();
 
                 // Otorgar puntos de forma centralizada
-                otorgarPuntosPorReporte(reportero, objeto);
+                otorgarPuntosPorReporte(objeto);
 
                 return "Objeto registrado correctamente y guardado en CSV.";
             } else {
@@ -468,6 +468,16 @@ public class Sistema {
             }
         }
         return Optional.empty();
+    }
+
+    private Usuario buscarUsuarioPorCorreo(String correo) {
+        if (correo == null || listaUsuarios == null) return null;
+        for (Usuario u : listaUsuarios) {
+            if (u != null && u.getCorreo() != null && u.getCorreo().equalsIgnoreCase(correo)) {
+                return u;
+            }
+        }
+        return null;
     }
 
     public boolean cambiarRolUsuarioCSV(String correoInstitucional, String nuevoRol) {
@@ -749,9 +759,20 @@ public class Sistema {
     }
     }
 
-private void otorgarPuntosPorReporte(Usuario usuario, Objeto objeto) {
-    if (usuario == null || objeto == null) return;
-    usuario.sumarPuntos(PUNTOS_REPORTE_OBJETO);
-}
+    private void otorgarPuntosPorReporte(Objeto objeto) {
+        if (objeto == null) return;
+
+        String correoReportero = objeto.getReportadoPor(); 
+
+        Usuario reportero = buscarUsuarioPorCorreo(correoReportero);
+
+        if (reportero == null) {
+            reportero = (getUsuarioEnSesion() != null) ? getUsuarioEnSesion() : getUsuarioActual();
+        }
+
+        if (reportero != null) {
+            reportero.sumarPuntos(PUNTOS_REPORTE_OBJETO);
+        }
+    }
 }
 
