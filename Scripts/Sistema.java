@@ -20,7 +20,6 @@ public class Sistema {
     private Usuario usuarioActual;
     private Usuario usuarioEnSesion;
 
-    private static final int PUNTOS_REPORTE_OBJETO = 10;
     public static final String ROL_ADMIN      = "ADMIN";
     public static final String ROL_ESTUDIANTE = "ESTUDIANTE";
 
@@ -29,6 +28,7 @@ public class Sistema {
     public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
     public static final String ACCION_REPORTES         = "REPORTES";
     public static final String ACCION_ELIMINAR_OBJETOS = "ELIMINAR_OBJETOS";
+    private static final int PUNTOS_REPORTE_OBJETO = 10;
 
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
     private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
@@ -239,19 +239,17 @@ public class Sistema {
         {
             boolean okCSV = insertarObjetoCSV(objeto);
             if (okCSV) {
-                // Obtener el usuario que reporta: preferimos la sesión actual;
-                // de lo contrario, usamos el "usuarioActual" si tu flujo lo maneja así.
-                Usuario reportero = (getUsuarioEnSesion() != null) ? getUsuarioEnSesion() : getUsuarioActual();
-
-                // Otorgar puntos de forma centralizada
+                // 🔹 AQUÍ se suman los puntos por el reporte
                 otorgarPuntosPorReporte(objeto);
-
                 return "Objeto registrado correctamente y guardado en CSV.";
             } else {
                 return "Objeto registrado, pero error guardando en CSV.";
             }
         } 
-        return "No se pudo registrar el objeto (validación falló).";
+        else 
+        {
+            return "No se pudo registrar el objeto (validación falló).";
+        }
     }
 
     public boolean registrarObjeto(Objeto objeto) {
@@ -760,17 +758,11 @@ public class Sistema {
 
     private void otorgarPuntosPorReporte(Objeto objeto) {
         if (objeto == null) return;
-
-        String correoReportero = objeto.getReportadoPor(); 
-
-        Usuario reportero = buscarUsuarioPorCorreo(correoReportero);
-
-        if (reportero == null) {
-            reportero = (getUsuarioEnSesion() != null) ? getUsuarioEnSesion() : getUsuarioActual();
-        }
-
-        if (reportero != null) {
-            reportero.sumarPuntos(PUNTOS_REPORTE_OBJETO);
+        if (usuarioActual != null) {
+            usuarioActual.sumarPuntos(PUNTOS_REPORTE_OBJETO);
+            if (vistaUsuario != null) {
+                vistaUsuario.mensaje("Has ganado " + PUNTOS_REPORTE_OBJETO + " puntos. Total: " + usuarioActual.getPuntos());
+            }
         }
     }
 }
