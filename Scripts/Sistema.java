@@ -187,12 +187,11 @@ public class Sistema {
                 }
                 break;
                 
-            case 5: // Ver perfil y puntos
-                Optional<Usuario> usuarioPerfil = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
-                if (usuarioPerfil.isPresent()) {
-                    vistaUsuario.mostrarPerfilUsuario(usuarioPerfil.get());
+            case 5:
+                if (usuarioActual != null) {
+                    vistaUsuario.mostrarPerfilUsuario(usuarioActual);
                 } else {
-                    vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
+                    vistaUsuario.mensaje("Error: no hay usuario en sesión.");
                 }
                 break;
                 

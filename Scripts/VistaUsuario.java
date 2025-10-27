@@ -394,4 +394,20 @@ public class VistaUsuario
         System.err.println(mensaje);
     }
 
+    public void verPerfilYPuntos() {
+        Usuario u = (sistema.getUsuarioEnSesion() != null)
+            ? sistema.getUsuarioEnSesion()
+            : sistema.getUsuarioActual();
+
+        if (u == null) {
+            System.out.println("Debes iniciar sesión para ver tu perfil.");
+            return;
+        }
+
+        System.out.println("\n--- Perfil ---");
+        System.out.println("Nombre:  " + u.getNombre());
+        System.out.println("Correo:  " + u.getCorreo());
+        System.out.println("Rol:     " + u.getRol());
+        System.out.println("Puntos:  " + u.getPuntos());
+    }
 }
