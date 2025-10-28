@@ -77,65 +77,62 @@ public class Sistema {
     }
 
     // ====== Flujo principal ======
-    public void iniciarSistema() {
-        int opcionInicio = vistaUsuario.IniciarVistaUsuario();
-
+    public void iniciarSistema() 
+    {
         boolean login = false;
 
-        if (opcionInicio == 1) { // 1 = REGISTRARSE
+        while(!login)
+        {
+
+        int opcionInicio = vistaUsuario.IniciarVistaUsuario();
+
+        switch (opcionInicio){ 
+        case 1: // 1 = REGISTRARSE
+            
+            
             String nombre = vistaUsuario.solicitarNombrePersona();
             String correo = vistaUsuario.solicitarCorreo();
             String contrasena = vistaUsuario.solicitarContrasena();
 
             boolean ok = insertarUsuarioCSV(nombre, correo, contrasena, "USUARIO");
-            if (ok) {
+            if (ok) 
+            {
                 buscarUsuarioPorCorreoCSV(correo).ifPresent(listaUsuarios::add);
                 vistaUsuario.mensaje("Registro exitoso. Ahora inicia sesión.");
-            } else {
+            } 
+            else
+            {
                 vistaUsuario.mensaje("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
             }
+            break;
 
-            // Ahora 2 = INICIAR SESIÓN
-            int opcion = vistaUsuario.IniciarVistaUsuario();
-            if (opcion == 2) {
-                String correoL = vistaUsuario.solicitarCorreo();
-                String contrasenaL = vistaUsuario.solicitarContrasena();
-                Optional<Usuario> lu = autenticarUsuarioCSV(correoL, contrasenaL);
-                if (lu.isPresent()) {
-                    usuarioActual = lu.get();
-                    usuarioEnSesion = lu.get();
-                    login = true;
-                } else {
-                    vistaUsuario.mensaje("Credenciales inválidas.");
-                }
-            } else {
-                vistaUsuario.mensaje("Opción inválida. Saliendo...");
-                return;
-            }
+        case 2:
+        // 2 = INICIAR SESIÓN
+            String correo1 = vistaUsuario.solicitarCorreo();
+            String contrasena1 = vistaUsuario.solicitarContrasena();
 
-        } else if (opcionInicio == 2) { // 2 = INICIAR SESIÓN
-            String correo = vistaUsuario.solicitarCorreo();
-            String contrasena = vistaUsuario.solicitarContrasena();
-
-            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo, contrasena);
-            if (userOpt.isPresent()) {
+            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo1, contrasena1);
+            if (userOpt.isPresent()) 
+            {
                 Usuario u = userOpt.get();
                 usuarioActual = u;
                 usuarioEnSesion = u;
                 vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
                 login = true;
-            } else {
-                vistaUsuario.mensaje("Credenciales inválidas.");
+            } 
+            else 
+            {
+                vistaUsuario.mensaje("Credenciales inválidas, intentelo de nuevo.");
             }
-        } else {
-            vistaUsuario.mensaje("Opción inválida. Saliendo...");
-            return;
+            break;
+        
+        default:
+        
+            vistaUsuario.mensaje("Opción inválida, intente de nuevo");
+            break;
+        }    
         }
-
-        if (!login) {
-            vistaUsuario.mensaje("No se pudo iniciar sesión. Saliendo...");
-            return;
-        }
+        
 
         boolean cierre = false;
         while (!cierre) {
