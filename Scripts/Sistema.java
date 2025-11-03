@@ -29,6 +29,7 @@ public class Sistema {
     public static final String ACCION_REPORTES         = "REPORTES";
     public static final String ACCION_ELIMINAR_OBJETOS = "ELIMINAR_OBJETOS";
     private static final int PUNTOS_REPORTE_OBJETO = 10;
+    private static final int PUNTOS_REPORTE_ENCONTRADO = 10;
 
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
     private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
@@ -219,6 +220,17 @@ public class Sistema {
     public String vista() {
         return "Vista en Mantenimiento...  ...";
     }
+    private void otorgarPuntosSiEncontrado(Objeto objeto) {
+        if (objeto == null) return;
+        if (!Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(objeto.getEstado())) return;
+
+        if (usuarioActual != null) {
+            usuarioActual.sumarPuntos(PUNTOS_REPORTE_ENCONTRADO);
+            // Persistir al CSV (migrará header si hace falta)
+            usuariosCSV.actualizarPuntosPorCorreo(usuarioActual.getCorreo(), usuarioActual.getPuntos());
+            uiInfo("Has ganado " + PUNTOS_REPORTE_ENCONTRADO + " puntos. Total: " + usuarioActual.getPuntos());
+        }
+    }
 
     // ====== Objetos ======
     public String registrarObjeto1() 
@@ -239,8 +251,9 @@ public class Sistema {
         {
             boolean okCSV = insertarObjetoCSV(objeto);
             if (okCSV) {
-                // 🔹 AQUÍ se suman los puntos por el reporte
-                otorgarPuntosPorReporte(objeto);
+                // ⬇️ sumar y persistir SOLO si es 'encontrado'
+                otorgarPuntosSiEncontrado(objeto);
+                usuariosCSV.actualizarPuntosPorCorreo(usuarioActual.getCorreo(), usuarioActual.getPuntos());
                 return "Objeto registrado correctamente y guardado en CSV.";
             } else {
                 return "Objeto registrado, pero error guardando en CSV.";

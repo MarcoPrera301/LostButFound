@@ -3,10 +3,14 @@ id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,repor
 3,ipad 12va generacion,electronico,pendiente_validacion,2025-10-21,CIT-315B,,pep11111@uvg.edu.gt,
 10,caca,documento,recuperado,2025-10-21,CIT,2025-10-22,pep11111@uvg.edu.gt,
 11,lola,electronico,recuperado,2025-10-21,CIT,2025-10-21,pre25468@uvg.edu.gt,pep11111@uvg.edu.gt
-12,yeti azul bonito,recipientes,encontrado,2025-10-22,CIT-618,,,
+12,yeti azul bonito,recipientes,pendiente_validacion,2025-10-22,CIT-618,,,pep11111@uvg.edu.gt
 13,objeto,documento,perdido,2025-12-12,cit,,,
 14,pachon,documento,perdido,2025-12-12,CIT,,,
-15,estuche,ropa,encontrado,2025-12-12,CIT,,,
+15,estuche,ropa,pendiente_validacion,2025-12-12,CIT,,,pep11111@uvg.edu.gt
 1,billetera de cuero cafe,accesorio,pendiente_validacion,2025-10-24,CIT-618,,,pre25468@uvg.edu.gt
 16,pachon gris marca mana,recipientes,pendiente_validacion,2025-10-24,biblioteca,,pre25468@uvg.edu.gt,pep11111@uvg.edu.gt
 17,perdido,accesorio,perdido,2025-10-26,Cit-315,,pre25468@uvg.edu.gt,
+18,Estuche,utiles,encontrado,2006-10-26,Cit-211,,pep11111@uvg.edu.gt,
+19,perdido,accesorio,perdido,2025-11-02,Cit-308,,pre25468@uvg.edu.gt,
+20,Lapiz Rojo,utiles,encontrado,2025-11-02,Cit-516,,pre25468@uvg.edu.gt,
+21,Cargador iphone,electronico,encontrado,2025-11-03,Cit-524,,pre25468@uvg.edu.gt,
