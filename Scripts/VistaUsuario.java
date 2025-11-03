@@ -28,15 +28,30 @@ public class VistaUsuario
         System.out.println("1. Registrarse");
         System.out.println("2. Iniciar sesión");
         System.out.print("Seleccione una opción: ");
+
+        int opcion = pedirNumero();
+        return opcion;
+    }
+
+    public int pedirNumero()
+    {
+        try{
         int opcion = sc.nextInt();
         sc.nextLine(); // limpiar buffer
         return opcion;
+        }
+        catch (Exception e)
+        {
+            sc.nextLine(); // limpiar buffer en caso de error
+            System.out.println("Entrada inválida. Por favor ingrese un número.");
+            return 0; 
+        }
     }
 
 
     public int verMenu()
     {
-        int opcion;
+        
 
         System.out.println("\n--- Menú de Usuario ---");
         System.out.println("1. Reportar objeto perdido/encontrado");
@@ -48,9 +63,7 @@ public class VistaUsuario
         System.out.println("7. Salir");
         System.out.println("Seleccione una opción: ");
 
-        opcion = sc.nextInt();
-        sc.nextLine(); // Limpiar el buffer
-
+        int opcion=pedirNumero();
         return opcion;
     }
 
@@ -62,8 +75,7 @@ public class VistaUsuario
     System.out.println("3. Volver al menú principal");
     System.out.print("Seleccione una opción: ");
     
-    int opcion = sc.nextInt();
-    sc.nextLine();
+    int opcion=pedirNumero();
     return opcion;
     }
 
@@ -77,8 +89,7 @@ public class VistaUsuario
         System.out.println("4. Volver al menú principal");
         System.out.print("Seleccione una opción: ");
         
-        int opcion = sc.nextInt();
-        sc.nextLine(); // Limpiar el buffer
+        int opcion=pedirNumero();
         return opcion;
     }
 
@@ -327,8 +338,7 @@ public class VistaUsuario
 
     public int elegirPremio() {
         System.out.print("Seleccione el número del premio a canjear: ");
-        int opcion = sc.nextInt();
-        sc.nextLine();
+        int opcion=pedirNumero();
         return opcion;
     }
 
