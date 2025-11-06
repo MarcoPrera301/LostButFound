@@ -1,6 +1,12 @@
-idUsuario,nombre,correo,contrasena,rol,creadoEn
+idUsuario,nombre,correo,contrasena,rol,creadoEn,puntos
 
 
+<<<<<<< HEAD
+1,Admin,admin@uvg.edu.gt,1234,ADMIN,2025-10-21,0
+2,Marco Prera,pre25468@uvg.edu.gt,Marconix301,USUARIO,2025-10-21,10
+3,Pepe Peponzio,pep11111@uvg.edu.gt,pepepe,USUARIO,2025-10-21,0
+4,lolop@gmail.com,balerino,tyyt,USUARIO,2025-10-22,0
+=======
 1,Admin,admin@uvg.edu.gt,1234,ADMIN,2025-10-21
 2,Marco Prera,pre25468@uvg.edu.gt,Marconix301,USUARIO,2025-10-21
 3,Pepe Peponzio,pep11111@uvg.edu.gt,pepepe,USUARIO,2025-10-21
@@ -8,3 +14,5 @@ idUsuario,nombre,correo,contrasena,rol,creadoEn
 5,Carlos,carlospozuelos@gmail.com,carlitos,USUARIO,2025-10-24
 6,Andres,cas25039@gmail.com,cas25039,USUARIO,2025-10-26
 7,David,asdf@gmail.com,1023,USUARIO,2025-11-03
+8,adfasdf,adsfadsf,asdfasdf,USUARIO,2025-10-28
+>>>>>>> d9806516b2318b3dc422a1f7470ef4de41310f28

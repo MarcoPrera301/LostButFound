@@ -48,6 +48,16 @@ public class Usuario {
 
     public int getPuntos() { return puntos; }
 
+    public void setPuntos(int puntos) {
+        this.puntos = Math.max(0, puntos);
+    }
+
+    public void sumarPuntos(int cantidad) {
+        if (cantidad > 0) {
+            this.puntos += cantidad;
+        }
+    }
+
     public void agregarPremio(Premio premio) {
        this.premioReclamado.add(premio);
     }
@@ -65,4 +75,5 @@ public class Usuario {
     {
         return this.esAdmin();
     }
+
 }

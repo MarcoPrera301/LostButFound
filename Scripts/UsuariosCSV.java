@@ -43,7 +43,19 @@ public class UsuariosCSV {
                     String nombre = p[1].trim();
                     String contrasena = p[3];
                     String rol = p[4].trim();
-                    return Optional.of(new Usuario(id, nombre, correo, contrasena, rol));
+                    Usuario u = new Usuario(id, nombre, correo, contrasena, rol);
+
+                    // 👇 Nuevo: lee puntos si el archivo tiene esa columna (posición 6)
+                    if (p.length >= 7) {
+                        try {
+                            u.setPuntos(Integer.parseInt(p[6].trim()));
+                        } catch (NumberFormatException ignore) {
+                            u.setPuntos(0);
+                        }
+                    }
+
+                    return Optional.of(u);
+
                 }
             }
         } catch (IOException ignore) {}
@@ -70,8 +82,10 @@ public class UsuariosCSV {
                 esc(correo),
                 esc(contrasena),
                 esc(rol.toUpperCase(Locale.ROOT)),
-                esc(hoy())
+                esc(hoy()),
+                "0"
         );
+
 
         try (BufferedWriter bw = Files.newBufferedWriter(
                 rutaCSVUsuarios, StandardCharsets.UTF_8,
@@ -200,4 +214,72 @@ public class UsuariosCSV {
         String out = s.replace("\"", "\"\"");
         return q ? "\"" + out + "\"" : out;
     }
+
+    public boolean actualizarPuntosPorCorreo(String correoObjetivo, int nuevosPuntos) {
+        if (correoObjetivo == null || correoObjetivo.isBlank()) return false;
+
+        Path src = rutaCSVUsuarios;
+        Path tmp = src.resolveSibling(src.getFileName().toString() + ".tmp");
+        boolean actualizado = false;
+
+        try (BufferedReader br = Files.newBufferedReader(src, StandardCharsets.UTF_8);
+            BufferedWriter bw = Files.newBufferedWriter(tmp, StandardCharsets.UTF_8,
+                    StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+
+            // 1) Cabecera (migración automática si no existe "puntos")
+            String header = br.readLine();
+            if (header == null) return false;
+            boolean headerTienePuntos = header.toLowerCase().contains("puntos");
+            if (!headerTienePuntos) header = header + ",puntos";
+            bw.write(header);
+            bw.newLine();
+
+            // 2) Reescritura de filas
+            String line;
+            while ((line = br.readLine()) != null) {
+                if (line.isBlank()) { bw.newLine(); continue; }
+
+                String[] p = parseCSVLine(line);
+
+                // Normaliza a 7 columnas: [0]=id,[1]=nombre,[2]=correo,[3]=contrasena,[4]=rol,[5]=creadoEn,[6]=puntos
+                String[] out = new String[Math.max(7, p.length)];
+                for (int i = 0; i < out.length; i++) out[i] = "";
+                for (int i = 0; i < p.length && i < out.length; i++) out[i] = p[i];
+
+                if (out[6] == null || out[6].isBlank()) out[6] = "0";
+
+                String correo = (out[2] == null ? "" : out[2].trim());
+                if (correo.equalsIgnoreCase(correoObjetivo.trim())) {
+                    out[6] = String.valueOf(Math.max(0, nuevosPuntos));
+                    actualizado = true;
+                }
+
+                // Re-escribe la fila con escape seguro
+                String fila = String.join(",",
+                    (out[0] == null ? "" : out[0].trim()),
+                    esc(out[1]),
+                    esc(out[2]),
+                    esc(out[3]),
+                    esc(out[4]),
+                    esc(out[5]),
+                    esc(out[6])
+                );
+                bw.write(fila);
+                bw.newLine();
+            }
+        } catch (IOException e) {
+            return false;
+        }
+
+        try {
+            Files.move(tmp, src,
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                java.nio.file.StandardCopyOption.ATOMIC_MOVE);
+        } catch (IOException e) {
+            return false;
+        }
+
+        return actualizado;
+    }
+
 }

@@ -28,6 +28,8 @@ public class Sistema {
     public static final String ACCION_GESTION_PREMIOS  = "GESTION_PREMIOS";
     public static final String ACCION_REPORTES         = "REPORTES";
     public static final String ACCION_ELIMINAR_OBJETOS = "ELIMINAR_OBJETOS";
+    private static final int PUNTOS_REPORTE_OBJETO = 10;
+    private static final int PUNTOS_REPORTE_ENCONTRADO = 10;
 
     private final Path rutaCSVUsuarios = Paths.get("data", "usuarios.csv");
     private final Path rutaCSVObjetos  = Paths.get("data", "objetos.csv");
@@ -76,65 +78,62 @@ public class Sistema {
     }
 
     // ====== Flujo principal ======
-    public void iniciarSistema() {
-        int opcionInicio = vistaUsuario.IniciarVistaUsuario();
-
+    public void iniciarSistema() 
+    {
         boolean login = false;
 
-        if (opcionInicio == 1) { // 1 = REGISTRARSE
+        while(!login)
+        {
+
+        int opcionInicio = vistaUsuario.IniciarVistaUsuario();
+
+        switch (opcionInicio){ 
+        case 1: // 1 = REGISTRARSE
+            
+            
             String nombre = vistaUsuario.solicitarNombrePersona();
             String correo = vistaUsuario.solicitarCorreo();
             String contrasena = vistaUsuario.solicitarContrasena();
 
             boolean ok = insertarUsuarioCSV(nombre, correo, contrasena, "USUARIO");
-            if (ok) {
+            if (ok) 
+            {
                 buscarUsuarioPorCorreoCSV(correo).ifPresent(listaUsuarios::add);
                 vistaUsuario.mensaje("Registro exitoso. Ahora inicia sesión.");
-            } else {
+            } 
+            else
+            {
                 vistaUsuario.mensaje("No fue posible registrar al usuario. Intente iniciar sesión o volver a registrarse.");
             }
+            break;
 
-            // Ahora 2 = INICIAR SESIÓN
-            int opcion = vistaUsuario.IniciarVistaUsuario();
-            if (opcion == 2) {
-                String correoL = vistaUsuario.solicitarCorreo();
-                String contrasenaL = vistaUsuario.solicitarContrasena();
-                Optional<Usuario> lu = autenticarUsuarioCSV(correoL, contrasenaL);
-                if (lu.isPresent()) {
-                    usuarioActual = lu.get();
-                    usuarioEnSesion = lu.get();
-                    login = true;
-                } else {
-                    vistaUsuario.mensaje("Credenciales inválidas.");
-                }
-            } else {
-                vistaUsuario.mensaje("Opción inválida. Saliendo...");
-                return;
-            }
+        case 2:
+        // 2 = INICIAR SESIÓN
+            String correo1 = vistaUsuario.solicitarCorreo();
+            String contrasena1 = vistaUsuario.solicitarContrasena();
 
-        } else if (opcionInicio == 2) { // 2 = INICIAR SESIÓN
-            String correo = vistaUsuario.solicitarCorreo();
-            String contrasena = vistaUsuario.solicitarContrasena();
-
-            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo, contrasena);
-            if (userOpt.isPresent()) {
+            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo1, contrasena1);
+            if (userOpt.isPresent()) 
+            {
                 Usuario u = userOpt.get();
                 usuarioActual = u;
                 usuarioEnSesion = u;
                 vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
                 login = true;
-            } else {
-                vistaUsuario.mensaje("Credenciales inválidas.");
+            } 
+            else 
+            {
+                vistaUsuario.mensaje("Credenciales inválidas, intentelo de nuevo.");
             }
-        } else {
-            vistaUsuario.mensaje("Opción inválida. Saliendo...");
-            return;
+            break;
+        
+        default:
+        
+            vistaUsuario.mensaje("Opción inválida, intente de nuevo");
+            break;
+        }    
         }
-
-        if (!login) {
-            vistaUsuario.mensaje("No se pudo iniciar sesión. Saliendo...");
-            return;
-        }
+        
 
         boolean cierre = false;
         while (!cierre) {
@@ -186,12 +185,11 @@ public class Sistema {
                 }
                 break;
                 
-            case 5: // Ver perfil y puntos
-                Optional<Usuario> usuarioPerfil = buscarUsuarioPorCorreoCSV(vistaUsuario.getCorreo());
-                if (usuarioPerfil.isPresent()) {
-                    vistaUsuario.mostrarPerfilUsuario(usuarioPerfil.get());
+            case 5:
+                if (usuarioActual != null) {
+                    vistaUsuario.mostrarPerfilUsuario(usuarioActual);
                 } else {
-                    vistaUsuario.mensaje("Error: no se encontró el usuario en sesión.");
+                    vistaUsuario.mensaje("Error: no hay usuario en sesión.");
                 }
                 break;
                 
@@ -219,6 +217,17 @@ public class Sistema {
     public String vista() {
         return "Vista en Mantenimiento...  ...";
     }
+    private void otorgarPuntosSiEncontrado(Objeto objeto) {
+        if (objeto == null) return;
+        if (!Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(objeto.getEstado())) return;
+
+        if (usuarioActual != null) {
+            usuarioActual.sumarPuntos(PUNTOS_REPORTE_ENCONTRADO);
+            // Persistir al CSV (migrará header si hace falta)
+            usuariosCSV.actualizarPuntosPorCorreo(usuarioActual.getCorreo(), usuarioActual.getPuntos());
+            uiInfo("Has ganado " + PUNTOS_REPORTE_ENCONTRADO + " puntos. Total: " + usuarioActual.getPuntos());
+        }
+    }
 
     // ====== Objetos ======
     public String registrarObjeto1() 
@@ -238,8 +247,14 @@ public class Sistema {
         if (registrarObjeto(objeto)) 
         {
             boolean okCSV = insertarObjetoCSV(objeto);
-            return okCSV ? "Objeto registrado correctamente y guardado en CSV."
-                        : "Objeto registrado, pero error guardando en CSV.";
+            if (okCSV) {
+                // ⬇️ sumar y persistir SOLO si es 'encontrado'
+                otorgarPuntosSiEncontrado(objeto);
+                usuariosCSV.actualizarPuntosPorCorreo(usuarioActual.getCorreo(), usuarioActual.getPuntos());
+                return "Objeto registrado correctamente y guardado en CSV.";
+            } else {
+                return "Objeto registrado, pero error guardando en CSV.";
+            }
         } 
         else 
         {
@@ -460,6 +475,16 @@ public class Sistema {
             }
         }
         return Optional.empty();
+    }
+
+    private Usuario buscarUsuarioPorCorreo(String correo) {
+        if (correo == null || listaUsuarios == null) return null;
+        for (Usuario u : listaUsuarios) {
+            if (u != null && u.getCorreo() != null && u.getCorreo().equalsIgnoreCase(correo)) {
+                return u;
+            }
+        }
+        return null;
     }
 
     public boolean cambiarRolUsuarioCSV(String correoInstitucional, String nuevoRol) {
@@ -739,6 +764,16 @@ public class Sistema {
     } else {
         vistaUsuario.mensaje("No tienes suficientes puntos para este premio.");
     }
+    }
+
+    private void otorgarPuntosPorReporte(Objeto objeto) {
+        if (objeto == null) return;
+        if (usuarioActual != null) {
+            usuarioActual.sumarPuntos(PUNTOS_REPORTE_OBJETO);
+            if (vistaUsuario != null) {
+                vistaUsuario.mensaje("Has ganado " + PUNTOS_REPORTE_OBJETO + " puntos. Total: " + usuarioActual.getPuntos());
+            }
+        }
     }
 }
 
