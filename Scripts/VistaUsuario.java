@@ -362,30 +362,62 @@ public class VistaUsuario
         }
     }
 
-        public void eliminarObjetoUI() {
-            if (sistema == null || !sistema.esAdminSesion()) {
-                System.out.println("Solo un administrador puede eliminar objetos.");
+    public void mostrarObjetosConTitulo(String titulo, List<Objeto> objetos) {
+        if (objetos == null || objetos.isEmpty()) {
+            System.out.println("No hay elementos para mostrar.");
+            return;
+        }
+        System.out.println("\n--- " + titulo + " ---");
+        for (Objeto obj : objetos) {
+            System.out.println(
+                "ID: " + obj.getId() +
+                ", Tipo: " + obj.getTipo() +
+                ", Descripción: " + obj.getDescripcion() +
+                ", Estado: " + obj.getEstado() +
+                ", Fecha Encontrado: " + obj.getFechaEncontrado() +
+                ", Lugar Encontrado: " + obj.getLugarEncontrado()
+            );
+        }
+    }
+
+    public void eliminarObjetoUI() {
+        if (sistema == null || !sistema.esAdminSesion()) {
+            System.out.println("Solo un administrador puede eliminar objetos.");
                 return;
-            }
+        }
+
      // Resumen admin-only de DONADOS
         List<Objeto> donados = sistema.filtrarPorEstado(sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_DONADO);
         System.out.println("(Resumen) Objetos DONADOS en el sistema: " + (donados == null ? 0 : donados.size()));
 
         System.out.print("¿Ver lista completa de donados? (S/N): ");
         String ver = sc.nextLine().trim();
-        if (ver.equalsIgnoreCase("S")) {
-            if (donados != null && !donados.isEmpty()) {
-                System.out.println("\n--- Objetos DONADOS ---");
-                mostrarObjetos(donados);
-            } else {
-                System.out.println("No hay objetos donados.");
+            if (ver.equalsIgnoreCase("S")) {
+                if (donados != null && !donados.isEmpty()) {
+                    mostrarObjetosConTitulo("Objetos DONADOS", donados);
+                } else {
+                    System.out.println("No hay objetos donados.");
+                }
             }
+
+        List<Objeto> todos = sistema.obtenerObjetosEnMemoria();
+        List<Objeto> perdidos = sistema.filtrarPorEstado(todos, Objeto.ESTADO_PERDIDO);
+        List<Objeto> encontrados = sistema.filtrarPorEstado(todos, Objeto.ESTADO_ENCONTRADO);
+
+        if (perdidos != null && !perdidos.isEmpty()) {
+            mostrarObjetosConTitulo("Objetos PERDIDOS (eliminables)", perdidos);
         }
+        if (encontrados != null && !encontrados.isEmpty()) {
+            mostrarObjetosConTitulo("Objetos ENCONTRADOS (eliminables)", encontrados);
+        }      
 
         System.out.println("== Eliminar objeto ==");
         System.out.print("ID del objeto a eliminar: ");
-        int id = sc.nextInt();
-        sc.nextLine();
+        int id = pedirNumero();             
+        if (id <= 0) {
+            System.out.println("ID inválido. Operación cancelada.");
+            return;
+        }
 
         System.out.print("Confirmar (S/N): ");
         String ok = sc.nextLine().trim();

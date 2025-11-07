@@ -599,18 +599,21 @@ public class Sistema {
     }
 
     // requerido por VistaUsuario
-    public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) 
-    {
+    public List<Objeto> filtrarPorEstado(List<Objeto> entrada, String estado) {
         List<Objeto> out = new ArrayList<>();
         if (entrada == null) return out;
+
+        String target = (estado == null ? "" : estado.trim());
         for (Objeto o : entrada) {
             if (o == null) continue;
-            if (estado == null || estado.isBlank() || estado.equalsIgnoreCase(o.getEstado())) {
+            String est = (o.getEstado() == null ? "" : o.getEstado().trim());
+            if (target.isBlank() || est.equalsIgnoreCase(target)) {
                 out.add(o);
             }
         }
         return out;
     }
+
 
     private List<Objeto> filtrarPorTipo(List<Objeto> objetos, String tipo) 
     {
