@@ -128,12 +128,17 @@ public class Sistema {
             }
             break;
         
+        case 3: // SALIR
+
+            vistaUsuario.mensaje("Saliendo. ¡Hasta luego!");
+            return;
+        
         default:
         
             vistaUsuario.mensaje("Opción inválida, intente de nuevo");
             break;
         }    
-        }
+    }
         
 
         boolean cierre = false;

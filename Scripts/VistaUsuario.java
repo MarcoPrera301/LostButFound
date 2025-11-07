@@ -27,6 +27,7 @@ public class VistaUsuario
         System.out.println("\n--- Inicio ---");
         System.out.println("1. Registrarse");
         System.out.println("2. Iniciar sesión");
+        System.out.println("3. Salir");
         System.out.print("Seleccione una opción: ");
 
         int opcion = pedirNumero();
@@ -411,11 +412,11 @@ public class VistaUsuario
             mostrarObjetosConTitulo("Objetos ENCONTRADOS (eliminables)", encontrados);
         }      
 
-        System.out.println("== Eliminar objeto ==");
-        System.out.print("ID del objeto a eliminar: ");
-        int id = pedirNumero();             
+        System.out.println("\n== Eliminar objeto ==");
+        System.out.print("ID del objeto a eliminar (0 para regresar): ");
+        int id = pedirNumero();  // lectura segura
         if (id <= 0) {
-            System.out.println("ID inválido. Operación cancelada.");
+            System.out.println("Operación cancelada. Regresando al menú.");
             return;
         }
 
