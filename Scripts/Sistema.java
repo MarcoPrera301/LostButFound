@@ -119,6 +119,7 @@ public class Sistema {
                 usuarioActual = u;
                 usuarioEnSesion = u;
                 vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
+                donarObjetosVencidos(); //regla de 6 meses
                 login = true;
             } 
             else 
@@ -444,6 +445,25 @@ public class Sistema {
             return false;
         }
     }
+
+    public void donarObjetosVencidos() {
+    boolean huboCambios = false;
+    LocalDate hoy = LocalDate.now();
+
+    for (Objeto o : listaObjetos) {
+        if (o == null) continue;
+        //6 meses calendario desde la fecha en que fue ENCONTRADO
+        if ("encontrado".equalsIgnoreCase(o.getEstado())
+            && o.getFechaEncontrado() != null
+            && o.getFechaEncontrado().plusMonths(6).isBefore(hoy)) {
+            o.setEstadoDonado(hoy);
+            huboCambios = true;
+        }
+    }
+    if (huboCambios) {
+        reescribirObjetosCSV(); // persiste estado=donado y fechaDevolucion
+    }
+}
 
     // ====== Usuarios (con UsuariosCSV) ======
     public void crearAdminPorDefectoSiVacio() {
