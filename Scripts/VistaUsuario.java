@@ -1,7 +1,12 @@
 import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+import java.time.format.DateTimeParseException;
+import java.time.format.ResolverStyle;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+
 
 public class VistaUsuario 
 {
@@ -189,22 +194,36 @@ public class VistaUsuario
     }
 
     public LocalDate solicitarFechaEncontrado() {
-        System.out.println("Ingrese la fecha en que encontró el objeto (YYYY-MM-DD o YYYY/MM/DD):");
+        // Acepta solo DD/MM/YYYY o DD-MM-YYYY (1 o 2 dígitos en día/mes)
+        DateTimeFormatter DMY_STRICT = new DateTimeFormatterBuilder()
+                .parseStrict()
+                .appendPattern("d-M-uuuu")
+                .toFormatter()
+                .withResolverStyle(ResolverStyle.STRICT);
+
         while (true) {
-            String fechaString = sc.nextLine().trim();
-            if (fechaString.isEmpty()) {
-                System.out.print("Entrada vacía. Intente de nuevo: ");
+            System.out.println("Ingrese la fecha en que encontró el objeto (DD/MM/YYYY o DD-MM-YYYY):");
+            String input = sc.nextLine().trim();
+            if (input.isEmpty()) {
+                System.out.println("La fecha no puede estar vacía.");
                 continue;
             }
-            String normalizada = fechaString.replace('/', '-'); // permite YYYY/MM/DD
+            // Normalizamos el separador a '-'
+            String normalized = input.replace('/', '-');
+
+            // Validamos formato exacto d-m-aaaa (solo números y separador / o -)
+            if (!normalized.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+                System.out.println("Formato inválido. Use por ejemplo 06/11/2025 o 6-11-2025.");
+                continue;
+            }
+
             try {
-                return LocalDate.parse(normalizada); // ISO: YYYY-MM-DD
-            } catch (java.time.format.DateTimeParseException e) {
-                System.out.print("Formato inválido. Use YYYY-MM-DD o YYYY/MM/DD: ");
+                return LocalDate.parse(normalized, DMY_STRICT); // valida fechas reales (29/02, etc.)
+            } catch (DateTimeParseException e) {
+                System.out.println("Fecha inválida. Verifique día/mes/año (ej.: 29/02 solo en año bisiesto).");
             }
         }
     }
-
     public String solicitarNombreObjeto() 
     {
         System.out.println("Ingrese el nombre del objeto:");
