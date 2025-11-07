@@ -8,8 +8,11 @@ import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+
 
 public class Sistema {
     private List<Objeto> listaObjetos;
@@ -120,6 +123,8 @@ public class Sistema {
                 usuarioEnSesion = u;
                 vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
                 donarObjetosVencidos(); //regla de 6 meses
+                List<String> avisos = generarNotificacionesInicioSesion(u);   // NUEVO
+                if (vistaUsuario != null) vistaUsuario.mostrarNotificaciones(avisos); // NUEVO
                 login = true;
             } 
             else 
@@ -467,6 +472,75 @@ public class Sistema {
         }
         if (huboCambios) {
             reescribirObjetosCSV();
+        }
+    }
+    // Notificaciones al iniciar sesión según lo que el usuario reportó como PERDIDO
+    public List<String> generarNotificacionesInicioSesion(Usuario u) {
+        List<String> out = new ArrayList<>();
+        if (u == null || listaObjetos == null || listaObjetos.isEmpty()) return out;
+
+        // 1) Detectar categorías (tipos) que este usuario reportó como PERDIDO
+        Set<String> tiposInteres = new HashSet<>();
+        String correo = u.getCorreo() == null ? "" : u.getCorreo().trim();
+        for (Objeto o : listaObjetos) {
+            if (o == null) continue;
+            if (Objeto.ESTADO_PERDIDO.equalsIgnoreCase(trim(o.getEstado()))
+                    && correo.equalsIgnoreCase(trim(o.getReportadoPor()))
+                    && !trim(o.getTipo()).isEmpty()) {
+                tiposInteres.add(normalizarTipo(o.getTipo()));
+            }
+        }
+        if (tiposInteres.isEmpty()) return out;
+
+        // 2) Para cada tipo PERDIDO del usuario, contar ENCONTRADOS de ese tipo
+        for (String tipo : tiposInteres) {
+            int encontrados = 0;
+            for (Objeto o : listaObjetos) {
+                if (o == null) continue;
+                if (Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(trim(o.getEstado()))
+                        && normalizarTipo(o.getTipo()).equals(tipo)) {
+                    encontrados++;
+                }
+            }
+            if (encontrados > 0) {
+                out.add(mensajePorTipo(tipo, encontrados));
+            }
+        }
+        return out;
+    }
+
+    // Helpers de formato
+    private static String trim(String s) { return s == null ? "" : s.trim(); }
+
+    // Normaliza categorías conocidas para evitar variaciones (e.g., "recipiente" vs "recipientes")
+    private static String normalizarTipo(String tipoRaw) {
+        String t = trim(tipoRaw).toLowerCase();
+        if (t.startsWith("electr")) return "electronico";
+        if (t.startsWith("accesor")) return "accesorio";
+        if (t.startsWith("doc"))     return "documento";
+        if (t.startsWith("ropa"))    return "ropa";
+        if (t.startsWith("util"))    return "utiles";
+        if (t.startsWith("recip"))   return "recipientes";
+        return t.isEmpty() ? "otros" : t;
+    }
+
+    // Mensaje por categoría (incluye el copy especial que pediste)
+    private static String mensajePorTipo(String tipo, int count) {
+        switch (tipo) {
+            case "electronico":
+                return "Nuevos dispositivos electrónicos encontrados, ¡revisa!";
+            case "accesorio":
+                return "Nuevos accesorios encontrados, ¡revisa!";
+            case "documento":
+                return "Nuevos documentos encontrados, ¡revisa!";
+            case "ropa":
+                return "Nueva ropa encontrada, ¡revisa!";
+            case "utiles":
+                return "Nuevos útiles encontrados, ¡revisa!";
+            case "recipientes":
+                return "Nuevos recipientes (pachones, yetis, etc.) encontrados, ¡revisa!";
+            default:
+                return "Hay " + count + " objetos encontrados del tipo '" + tipo + "'. ¡Revisa la búsqueda!";
         }
     }
 

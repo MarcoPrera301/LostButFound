@@ -19,7 +19,6 @@ public class VistaUsuario
         this.sistema = sistema;
     }
 
-
     public int IniciarVistaUsuario() 
     {
         System.out.println("====== Lost But Found - UVG ======");
@@ -381,6 +380,15 @@ public class VistaUsuario
         }
     }
 
+    public void mostrarNotificaciones(List<String> notificaciones) {
+        if (notificaciones == null || notificaciones.isEmpty()) return;
+        System.out.println("\n--- Notificaciones ---");
+        for (String n : notificaciones) {
+            System.out.println("• " + n);
+        }
+    }
+
+
     public void eliminarObjetoUI() {
         if (sistema == null || !sistema.esAdminSesion()) {
             System.out.println("Solo un administrador puede eliminar objetos.");
@@ -389,7 +397,7 @@ public class VistaUsuario
 
      // Resumen admin-only de DONADOS
         List<Objeto> donados = sistema.filtrarPorEstado(sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_DONADO);
-        System.out.println("(Resumen) Objetos DONADOS en el sistema: " + (donados == null ? 0 : donados.size()));
+        System.out.println("Objetos DONADOS en el sistema: " + (donados == null ? 0 : donados.size()));
 
         System.out.print("¿Ver lista completa de donados? (S/N): ");
         String ver = sc.nextLine().trim();
@@ -413,7 +421,7 @@ public class VistaUsuario
         }      
 
         System.out.println("\n== Eliminar objeto ==");
-        System.out.print("ID del objeto a eliminar (0 para regresar): ");
+        System.out.print("ID del objeto a eliminar (0 para regresar al menú): ");
         int id = pedirNumero();  // lectura segura
         if (id <= 0) {
             System.out.println("Operación cancelada. Regresando al menú.");
@@ -469,3 +477,5 @@ public class VistaUsuario
         System.out.println("Puntos:  " + u.getPuntos());
     }
 }
+
+

@@ -1,7 +1,7 @@
 idUsuario,nombre,correo,contrasena,rol,creadoEn,puntos
 
 
-1,Admin,admin@uvg.edu.gt,1234,ADMIN,2025-10-21,0
+1,Admin,admin@uvg.edu.gt,1234,ADMIN,2025-10-21,10
 2,Marco Prera,pre25468@uvg.edu.gt,Marconix301,USUARIO,2025-10-21,10
 3,Pepe Peponzio,pep11111@uvg.edu.gt,pepepe,USUARIO,2025-10-21,0
 4,lolop@gmail.com,balerino,tyyt,USUARIO,2025-10-22,0
