@@ -188,11 +188,21 @@ public class VistaUsuario
         return sc.nextLine();
     }
 
-    public LocalDate solicitarFechaEncontrado() 
-    {
-        System.out.println("Ingrese la fecha en que encontró el objeto (YYYY-MM-DD):");
-        String fechaString = sc.nextLine().trim();
-        return LocalDate.parse(fechaString);
+    public LocalDate solicitarFechaEncontrado() {
+        System.out.println("Ingrese la fecha en que encontró el objeto (YYYY-MM-DD o YYYY/MM/DD):");
+        while (true) {
+            String fechaString = sc.nextLine().trim();
+            if (fechaString.isEmpty()) {
+                System.out.print("Entrada vacía. Intente de nuevo: ");
+                continue;
+            }
+            String normalizada = fechaString.replace('/', '-'); // permite YYYY/MM/DD
+            try {
+                return LocalDate.parse(normalizada); // ISO: YYYY-MM-DD
+            } catch (java.time.format.DateTimeParseException e) {
+                System.out.print("Formato inválido. Use YYYY-MM-DD o YYYY/MM/DD: ");
+            }
+        }
     }
 
     public String solicitarNombreObjeto() 

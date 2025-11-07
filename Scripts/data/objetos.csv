@@ -18,4 +18,5 @@ id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,repor
 20,Lapiz Rojo,utiles,encontrado,2025-11-02,Cit-516,,pre25468@uvg.edu.gt,
 21,Cargador iphone,electronico,encontrado,2025-11-03,Cit-524,,pre25468@uvg.edu.gt,
 22,Verde,utiles,perdido,2024-08-07,Biblioteca,,admin@uvg.edu.gt,
-23,Verde,utiles,encontrado,2024-08-07,Biblioteca,,admin@uvg.edu.gt,
+23,Verde,utiles,donado,2024-08-07,Biblioteca,2025-11-07,admin@uvg.edu.gt,
+24,pachon azul,documento,perdido,2025-10-12,cit-205,,asdf@1234,
