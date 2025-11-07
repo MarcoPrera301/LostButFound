@@ -362,11 +362,26 @@ public class VistaUsuario
         }
     }
 
-    public void eliminarObjetoUI() {
-        if (sistema == null || !sistema.esAdminSesion()) {
-            System.out.println("Solo un administrador puede eliminar objetos.");
-            return;
+        public void eliminarObjetoUI() {
+            if (sistema == null || !sistema.esAdminSesion()) {
+                System.out.println("Solo un administrador puede eliminar objetos.");
+                return;
+            }
+     // Resumen admin-only de DONADOS
+        List<Objeto> donados = sistema.filtrarPorEstado(sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_DONADO);
+        System.out.println("(Resumen) Objetos DONADOS en el sistema: " + (donados == null ? 0 : donados.size()));
+
+        System.out.print("¿Ver lista completa de donados? (S/N): ");
+        String ver = sc.nextLine().trim();
+        if (ver.equalsIgnoreCase("S")) {
+            if (donados != null && !donados.isEmpty()) {
+                System.out.println("\n--- Objetos DONADOS ---");
+                mostrarObjetos(donados);
+            } else {
+                System.out.println("No hay objetos donados.");
+            }
         }
+
         System.out.println("== Eliminar objeto ==");
         System.out.print("ID del objeto a eliminar: ");
         int id = sc.nextInt();

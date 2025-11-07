@@ -449,22 +449,19 @@ public class Sistema {
     public void donarObjetosVencidos() {
         boolean huboCambios = false;
         LocalDate hoy = LocalDate.now();
-        List<Integer> idsDonados = new ArrayList<>(); // DEBUG: IDs donados
 
         for (Objeto o : listaObjetos) {
             if (o == null) continue;
-            // 6 meses calendario desde la fecha en que fue ENCONTRADO 
+            // Regla: 6 meses (exclusiva: dona al día siguiente de cumplirse 6 meses)
             if (Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(o.getEstado())
                 && o.getFechaEncontrado() != null
                 && o.getFechaEncontrado().plusMonths(6).isBefore(hoy)) {
                 o.setEstadoDonado(hoy);
-                idsDonados.add(o.getId()); // DEBUG
                 huboCambios = true;
             }
         }
         if (huboCambios) {
-            reescribirObjetosCSV(); // persiste estado=donado y fechaDevolucion
-            uiInfo("Donados automáticamente (6 meses): " + idsDonados); // DEBUG en consola
+            reescribirObjetosCSV();
         }
     }
 
