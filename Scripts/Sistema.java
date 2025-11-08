@@ -174,6 +174,10 @@ public class Sistema {
                         break;
                     case 3:
                         String ubicacion = vistaUsuario.filtroUbicacion();
+                        if (ubicacion == null) {              //si el usuario regresa
+                            vistaUsuario.mensaje("Operación cancelada.");
+                            break;
+                        }
                         List<Objeto> listafiltradaU = filtrarPorUbicacion(listaObjetos, ubicacion);
                         vistaUsuario.mostrarObjetos(listafiltradaU);
                         break;
@@ -319,6 +323,7 @@ public class Sistema {
         LocalDate f1 = vistaUsuario.filtroFecha1();
         LocalDate f2 = vistaUsuario.filtroFecha2();
         String ubic = vistaUsuario.filtroUbicacion();
+        if (ubic == null) return "Operación cancelada.";  // o maneja el regreso
 
         List<Objeto> resultados = new ArrayList<>();
         for (Objeto o : listaObjetos) {

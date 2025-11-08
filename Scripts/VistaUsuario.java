@@ -106,25 +106,77 @@ public class VistaUsuario
         return tipo;
     }
 
-    public LocalDate filtroFecha1() 
-    {
-        System.out.println("Ingrese una fecha de reporte (YYYY-MM-DD):");
-        String fechaStr = sc.nextLine();
-        return LocalDate.parse(fechaStr);
+    public LocalDate filtroFecha1() {
+        DateTimeFormatter DMY_STRICT = new DateTimeFormatterBuilder()
+                .parseStrict()
+                .appendPattern("d-M-uuuu")
+                .toFormatter()
+                .withResolverStyle(ResolverStyle.STRICT);
+
+        LocalDate fecha = null;
+        while (fecha == null) {
+            System.out.println("Ingrese la primera fecha (DD/MM/YYYY o DD-MM-YYYY):");
+            String input = sc.nextLine().trim();
+
+            if (input.isEmpty()) {
+                System.out.println("La fecha no puede estar vacía.");
+                continue;
+            }
+
+            String normalized = input.replace('/', '-');
+
+            if (!normalized.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+                System.out.println("Formato inválido. Use por ejemplo 06/11/2025 o 6-11-2025.");
+                continue;
+            }
+
+            try {
+                fecha = LocalDate.parse(normalized, DMY_STRICT);
+            } catch (DateTimeParseException e) {
+                System.out.println("Fecha inválida. Verifique día/mes/año (ej.: 29/02 solo en año bisiesto).");
+            }
+        }
+        return fecha;
     }
 
-    public LocalDate filtroFecha2() 
-    {
-        System.out.println("Ingrese otra fecha de reporte (YYYY-MM-DD):");
-        String fechaStr = sc.nextLine();
-        return LocalDate.parse(fechaStr);
-    }
+    public String filtroUbicacion() {
+    System.out.println("Ingrese la ubicación a buscar (o pulsa 1 para regresar):");
+    String ubic = sc.nextLine().trim();
+    if (ubic.equals("1")) return null;   // permite regresar al menú de filtros
+    return ubic;
+}
 
-    public String filtroUbicacion() 
-    {
-        System.out.println("Ingrese la ubicación donde se encontró el objeto: (CIT-618, Biblioteca, Edificio H, etc)");
-        String ubicacion = sc.nextLine().toLowerCase();
-        return ubicacion;
+    public LocalDate filtroFecha2() {
+        DateTimeFormatter DMY_STRICT = new DateTimeFormatterBuilder()
+                .parseStrict()
+                .appendPattern("d-M-uuuu")
+                .toFormatter()
+                .withResolverStyle(ResolverStyle.STRICT);
+
+        LocalDate fecha = null;
+        while (fecha == null) {
+            System.out.println("Ingrese la segunda fecha (DD/MM/YYYY o DD-MM-YYYY):");
+            String input = sc.nextLine().trim();
+
+            if (input.isEmpty()) {
+                System.out.println("La fecha no puede estar vacía.");
+                continue;
+            }
+
+            String normalized = input.replace('/', '-');
+
+            if (!normalized.matches("\\d{1,2}-\\d{1,2}-\\d{4}")) {
+                System.out.println("Formato inválido. Use por ejemplo 06/11/2025 o 6-11-2025.");
+                continue;
+            }
+
+            try {
+                fecha = LocalDate.parse(normalized, DMY_STRICT);
+            } catch (DateTimeParseException e) {
+                System.out.println("Fecha inválida. Verifique día/mes/año (ej.: 29/02 solo en año bisiesto).");
+            }
+        }
+        return fecha;
     }
 
     public void mensaje(String mensaje) 
