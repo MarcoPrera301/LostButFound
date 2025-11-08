@@ -152,15 +152,32 @@ public class Sistema {
 
         switch (opcion) {
             case 1: // Reportar objeto perdido/encontrado
-                String resultado = registrarObjeto1();
-                vistaUsuario.mensaje(resultado);
+
+                String descripcion = vistaUsuario.solicitarDescripcion();
+                if (descripcion == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
+
+                String tipo = vistaUsuario.solicitarTipoObjeto();
+                if (tipo == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
+
+                String estado = vistaUsuario.estadoObjeto();      
+                if (estado == null) { vistaUsuario.mensaje("Operación cancelada."); 
+                break; }
+
+                LocalDate fecha = vistaUsuario.solicitarFechaEncontrado(); 
+                if (fecha == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
+
+                String lugar = vistaUsuario.solicitarUbicacionObjeto();
+                if (lugar == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
                 break;
+
+                // null permite volver al menú principal cuando el usuario marque "1".
+
                 
             case 2: // Búsqueda de objetos encontrados
                 switch (vistaUsuario.verFiltros()) {
                     case 1:
-                        String tipo = vistaUsuario.filtroTipo();
-                        List<Objeto> listafiltradaT = filtrarPorTipo(listaObjetos, tipo);
+                        String tipoFiltro = vistaUsuario.filtroTipo();
+                        List<Objeto> listafiltradaT = filtrarPorTipo(listaObjetos, tipoFiltro);
                         vistaUsuario.mostrarObjetos(listafiltradaT);
                         break;
                     case 2:

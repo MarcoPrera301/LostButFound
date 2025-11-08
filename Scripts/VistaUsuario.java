@@ -164,50 +164,63 @@ public class VistaUsuario
     }
 
     // ----- Solicitud de datos para crear Objeto -----
+     // Si el usuario escribe "1", significa que quiere regresar al menú principal. En ese caso, se devuelve null para que el sistema lo detecte y cancele el flujo actual.
 
     public String estadoObjeto() 
     {
-        System.out.println("Reportar objeto perdido/encontrado \nIngrese 'Perdido' o 'Encontrado'");
+        System.out.println("Reportar objeto perdido/encontrado \nIngrese 'Perdido' o 'Encontrado' (o pulsa 1 para regresar):");
         String estado = sc.nextLine().trim().toLowerCase();
+        if (estado.equals("1")) return null;
         return estado.equals("perdido") ? Objeto.ESTADO_PERDIDO : Objeto.ESTADO_ENCONTRADO;
     }
 
 
-    public String solicitarTipoObjeto() 
-    {
-        System.out.println("Ingrese qué tipo de objeto es (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros):");
-        return sc.nextLine().toLowerCase();
+    public String solicitarTipoObjeto() {
+        System.out.println("Ingrese qué tipo de objeto es (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros) (o pulsa 1 para regresar):");
+        String tipo = sc.nextLine().trim().toLowerCase();  
+        if (tipo.equals("1")) return null;                  
+        return tipo;                                       
     }
-
 
 
     public String solicitarDescripcion() 
     {
-        System.out.println("Ingrese una descripción del objeto perdido/encontrado:");
-        return sc.nextLine();
+        System.out.println("Ingrese una descripción del objeto perdido/encontrado (o pulsa 1 para regresar):");
+        String descripcion = sc.nextLine();
+
+        if (descripcion.equals("1")) return null;  
+
+        return descripcion;
     }
 
     public String solicitarUbicacionObjeto() 
     {
-        System.out.println("Ingrese dónde encontro/perdio el objeto:");
-        return sc.nextLine();
+        System.out.println("Ingrese dónde encontró/perdió el objeto (o pulsa 1 para regresar):");
+        String ubic = sc.nextLine().trim();
+        if (ubic.equals("1")) return null;   // salir al menú
+        return ubic;
     }
 
     public LocalDate solicitarFechaEncontrado() {
-        // Acepta solo DD/MM/YYYY o DD-MM-YYYY (1 o 2 dígitos en día/mes)
+        // Acepta solo DD/MM/YYYY o DD-MM-YYYY 
         DateTimeFormatter DMY_STRICT = new DateTimeFormatterBuilder()
                 .parseStrict()
                 .appendPattern("d-M-uuuu")
                 .toFormatter()
                 .withResolverStyle(ResolverStyle.STRICT);
 
-        while (true) {
-            System.out.println("Ingrese la fecha en que encontró el objeto (DD/MM/YYYY o DD-MM-YYYY):");
+        LocalDate fecha = null; // Controla el ciclo
+        while (fecha == null) {
+            System.out.println("Ingrese la fecha en que encontró el objeto (DD/MM/YYYY o DD-MM-YYYY) o pulsa 1 para regresar:");
             String input = sc.nextLine().trim();
+
+            if (input.equals("1")) return null; // permite volver al menú
+
             if (input.isEmpty()) {
                 System.out.println("La fecha no puede estar vacía.");
                 continue;
             }
+
             // Normalizamos el separador a '-'
             String normalized = input.replace('/', '-');
 
@@ -218,12 +231,15 @@ public class VistaUsuario
             }
 
             try {
-                return LocalDate.parse(normalized, DMY_STRICT); // valida fechas reales (29/02, etc.)
+                fecha = LocalDate.parse(normalized, DMY_STRICT); // valida fechas reales (29/02, etc.)
             } catch (DateTimeParseException e) {
                 System.out.println("Fecha inválida. Verifique día/mes/año (ej.: 29/02 solo en año bisiesto).");
             }
         }
+
+        return fecha;
     }
+
     public String solicitarNombreObjeto() 
     {
         System.out.println("Ingrese el nombre del objeto:");
@@ -235,7 +251,7 @@ public class VistaUsuario
             // Si VistaUsuario ya tiene un Sistema asociado, usa el id que calcula el Sistema
             return this.sistema.siguienteIdObjeto();
         }
-        // Si no hay sistema (caso raro), sigue usando su contador interno
+        // Si no hay sistema sigue usando su contador interno
         if (this.siguienteIdObjeto <= 0) this.siguienteIdObjeto = 1;
         return this.siguienteIdObjeto++;
     }
@@ -413,7 +429,7 @@ public class VistaUsuario
         if (notificaciones == null || notificaciones.isEmpty()) return;
         System.out.println("\n--- Notificaciones ---");
         for (String n : notificaciones) {
-            System.out.println("• " + n);
+            System.out.println("-" + n);
         }
     }
 
