@@ -166,13 +166,31 @@ public class VistaUsuario
     // ----- Solicitud de datos para crear Objeto -----
      // Si el usuario escribe "1", significa que quiere regresar al menú principal. En ese caso, se devuelve null para que el sistema lo detecte y cancele el flujo actual.
 
-    public String estadoObjeto() 
-    {
-        System.out.println("Reportar objeto perdido/encontrado \nIngrese 'Perdido' o 'Encontrado' (o pulsa 1 para regresar):");
-        String estado = sc.nextLine().trim().toLowerCase();
-        if (estado.equals("1")) return null;
-        return estado.equals("perdido") ? Objeto.ESTADO_PERDIDO : Objeto.ESTADO_ENCONTRADO;
+    public String estadoObjeto() {
+        // Muestra las opciones de forma numérica
+        System.out.println("Seleccione el estado del objeto:");
+        System.out.println("1. Perdido");
+        System.out.println("2. Encontrado");
+        System.out.println("(o pulsa 0 para regresar):");
+
+        String entrada = sc.nextLine().trim();
+
+        // Si el usuario marca 0 regresa al menú
+        if (entrada.equals("0")) return null;
+
+        // Programación defensiva
+        while (!entrada.equals("1") && !entrada.equals("2")) {
+            System.out.println("Entrada inválida. Escriba 1 para Perdido o 2 para Encontrado (o 0 para regresar):");
+            entrada = sc.nextLine().trim();
+
+            if (entrada.equals("0")) return null;
+        }
+
+        // Retornar el estado correspondiente
+        if (entrada.equals("1")) return Objeto.ESTADO_PERDIDO;
+        else return Objeto.ESTADO_ENCONTRADO;
     }
+
 
 
     public String solicitarTipoObjeto() {

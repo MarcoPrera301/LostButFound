@@ -152,25 +152,11 @@ public class Sistema {
 
         switch (opcion) {
             case 1: // Reportar objeto perdido/encontrado
-
-                String descripcion = vistaUsuario.solicitarDescripcion();
-                if (descripcion == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
-
-                String tipo = vistaUsuario.solicitarTipoObjeto();
-                if (tipo == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
-
-                String estado = vistaUsuario.estadoObjeto();      
-                if (estado == null) { vistaUsuario.mensaje("Operación cancelada."); 
-                break; }
-
-                LocalDate fecha = vistaUsuario.solicitarFechaEncontrado(); 
-                if (fecha == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
-
-                String lugar = vistaUsuario.solicitarUbicacionObjeto();
-                if (lugar == null) { vistaUsuario.mensaje("Operación cancelada."); break; }
-                break;
-
-                // null permite volver al menú principal cuando el usuario marque "1".
+                String resultado = registrarObjeto1();
+                if (!"Operación cancelada.".equals(resultado)) {
+                vistaUsuario.mensaje(resultado);
+            }
+            break;
 
                 
             case 2: // Búsqueda de objetos encontrados
@@ -260,23 +246,36 @@ public class Sistema {
     // ====== Objetos ======
     public String registrarObjeto1() 
     {
+            String descripcion = vistaUsuario.solicitarDescripcion();
+    if (descripcion == null) return "Operación cancelada.";
+
+    String tipo = vistaUsuario.solicitarTipoObjeto();
+    if (tipo == null) return "Operación cancelada.";
+
+    String estado = vistaUsuario.estadoObjeto();
+    if (estado == null) return "Operación cancelada.";
+
+    LocalDate fecha = vistaUsuario.solicitarFechaEncontrado();
+    if (fecha == null) return "Operación cancelada.";
+
+    String lugar = vistaUsuario.solicitarUbicacionObjeto();
+    if (lugar == null) return "Operación cancelada.";
+    
         Objeto objeto = new Objeto(
-            vistaUsuario.solicitarDescripcion(),
-            vistaUsuario.solicitarTipoObjeto(),
-            vistaUsuario.estadoObjeto(),
-            // La Vista devuelve LocalDate
-            vistaUsuario.solicitarFechaEncontrado(),
-            vistaUsuario.solicitarUbicacionObjeto(),
+            descripcion,
+            tipo,
+            estado,
+            fecha,
+            lugar,
             vistaUsuario.siguienteIdObjeto(),
             vistaUsuario.getCorreo()
-
         );
 
         if (registrarObjeto(objeto)) 
         {
             boolean okCSV = insertarObjetoCSV(objeto);
             if (okCSV) {
-                // ⬇️ sumar y persistir SOLO si es 'encontrado'
+                // sumar y persistir SOLO si es 'encontrado'
                 otorgarPuntosSiEncontrado(objeto);
                 usuariosCSV.actualizarPuntosPorCorreo(usuarioActual.getCorreo(), usuarioActual.getPuntos());
                 return "Objeto registrado correctamente y guardado en CSV.";
