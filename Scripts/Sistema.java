@@ -742,7 +742,10 @@ public class Sistema {
     {
     List<Objeto> resultado = new ArrayList<>();
     for (Objeto obj : objetos) {
-        if (obj != null && obj.getFechaEncontrado() != null) {
+        if (obj != null 
+            && obj.getFechaEncontrado() != null
+            && obj.getEstado().equalsIgnoreCase(Objeto.ESTADO_ENCONTRADO)) { // 🔹 solo "sin dueño"
+
             LocalDate fechaObj = obj.getFechaEncontrado();
             if ((fechaInicio == null || !fechaObj.isBefore(fechaInicio)) &&
                 (fechaFin == null || !fechaObj.isAfter(fechaFin))) {
