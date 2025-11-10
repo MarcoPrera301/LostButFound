@@ -744,7 +744,7 @@ public class Sistema {
     for (Objeto obj : objetos) {
         if (obj != null 
             && obj.getFechaEncontrado() != null
-            && obj.getEstado().equalsIgnoreCase(Objeto.ESTADO_ENCONTRADO)) { // 🔹 solo "sin dueño"
+            && obj.getEstado().equalsIgnoreCase(Objeto.ESTADO_ENCONTRADO)) { 
 
             LocalDate fechaObj = obj.getFechaEncontrado();
             if ((fechaInicio == null || !fechaObj.isBefore(fechaInicio)) &&
@@ -760,10 +760,12 @@ public class Sistema {
     {
         List<Objeto> resultado = new ArrayList<>();
         for (Objeto obj : objetos) {
-            if (obj != null && obj.getLugarEncontrado() != null && 
-                obj.getLugarEncontrado().toLowerCase().contains(ubicacion.toLowerCase())) {
+            if (obj != null 
+                && obj.getLugarEncontrado() != null
+                && obj.getLugarEncontrado().toLowerCase().contains(ubicacion.toLowerCase()) // 🔹 permite coincidencias parciales
+                && obj.getEstado().equalsIgnoreCase(Objeto.ESTADO_ENCONTRADO)) { // 🔹 solo "sin dueño"
                 resultado.add(obj);
-            }
+        }
         }
         return resultado;
     }
