@@ -376,8 +376,7 @@ public class VistaUsuario
         mostrarObjetos(objetosDisponibles);
         
         System.out.print("ID del objeto a reclamar: ");
-        int idObj = sc.nextInt();
-        sc.nextLine();
+        int idObj = pedirNumero();
         
         Usuario usuarioActual = sistema.getUsuarioActual();
         if (usuarioActual == null) {
@@ -420,8 +419,7 @@ public class VistaUsuario
         }
         
         System.out.print("ID del objeto a validar: ");
-        int idObj = sc.nextInt();
-        sc.nextLine();
+        int idObj = pedirNumero();
         
         System.out.print("¿Confirmar validación? (Si/No): ");
         String confirmacion = sc.nextLine().trim();
