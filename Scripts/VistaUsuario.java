@@ -59,8 +59,8 @@ public class VistaUsuario
         
 
         System.out.println("\n--- Menú de Usuario ---");
-        System.out.println("1. Reportar objeto perdido/encontrado");
-        System.out.println("2. Busqueda de objetos encontrados");
+        System.out.println("1. Reportar objeto que perdiste o que encontraste");
+        System.out.println("2. Busqueda de objetos sin dueño");
         System.out.println("3. Validacion y reclamo de objeto");
         System.out.println("4. Canjear premios");
         System.out.println("5. Ver perfil y puntos");
@@ -87,7 +87,7 @@ public class VistaUsuario
     // filtros 
     public int verFiltros() 
     {
-        System.out.println("\n--- Filtros de Búsqueda de Objetos Encontrados ---");
+        System.out.println("\n--- Filtros de Búsqueda de Objetos Sin Dueño ---");
         System.out.println("1. Filtrar por tipo de objeto");
         System.out.println("2. Filtrar por fecha de reporte");
         System.out.println("3. Filtrar por ubicacion");
@@ -220,9 +220,9 @@ public class VistaUsuario
 
     public String estadoObjeto() {
         // Muestra las opciones de forma numérica
-        System.out.println("Seleccione el estado del objeto:");
-        System.out.println("1. Perdido");
-        System.out.println("2. Encontrado");
+        System.out.println("Qué relación tiene con el objeto?");
+        System.out.println("1. Lo busco");
+        System.out.println("2. Lo encontré");
         System.out.println("(o pulsa 0 para regresar):");
 
         String entrada = sc.nextLine().trim();
@@ -232,7 +232,7 @@ public class VistaUsuario
 
         // Programación defensiva
         while (!entrada.equals("1") && !entrada.equals("2")) {
-            System.out.println("Entrada inválida. Escriba 1 para Perdido o 2 para Encontrado (o 0 para regresar):");
+            System.out.println("Entrada inválida. Escriba 1 para Perdido o 2 para Sin dueño (o 0 para regresar):");
             entrada = sc.nextLine().trim();
 
             if (entrada.equals("0")) return null;
@@ -281,7 +281,7 @@ public class VistaUsuario
 
         LocalDate fecha = null; // Controla el ciclo
         while (fecha == null) {
-            System.out.println("Ingrese la fecha en que encontró el objeto (DD/MM/YYYY o DD-MM-YYYY) o pulsa 1 para regresar:");
+            System.out.println("Ingrese la fecha en que encontró/perdió el objeto (DD/MM/YYYY o DD-MM-YYYY) o pulsa 1 para regresar:");
             String input = sc.nextLine().trim();
 
             if (input.equals("1")) return null; // permite volver al menú
@@ -467,7 +467,7 @@ public class VistaUsuario
             System.out.println("No se encontraron objetos.");
             return;
         }
-        System.out.println("\n--- Objetos Encontrados ---");
+        System.out.println("\n--- Objetos Sin dueño ---");
         for (Objeto obj : objetos) {
             System.out.println("ID: " + obj.getId() + ", Tipo: " + obj.getTipo() + ", Descripción: " + obj.getDescripcion() +
             ", Estado: " + obj.getEstado() + ", Fecha Encontrado: " + obj.getFechaEncontrado() +

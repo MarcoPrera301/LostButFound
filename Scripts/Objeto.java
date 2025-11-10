@@ -3,7 +3,7 @@ import java.time.LocalDate;
 public class Objeto 
 {
     public static final String ESTADO_PERDIDO    = "perdido";
-    public static final String ESTADO_ENCONTRADO = "encontrado";
+    public static final String ESTADO_ENCONTRADO = "sin dueño";
     public static final String ESTADO_RECUPERADO = "recuperado";
     public static final String ESTADO_DONADO     = "donado";
     public static final String ESTADO_PENDIENTE_VALIDACION = "pendiente_validacion";

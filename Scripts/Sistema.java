@@ -726,10 +726,14 @@ public class Sistema {
         String tipoBuscado = tipo.trim().toLowerCase();
         for (Objeto obj : objetos) 
         {
-            if (obj != null && obj.getTipo() != null && obj.getTipo().toLowerCase().contains(tipoBuscado)) 
-            {
+            if (obj == null) continue;
+            
+            if (!Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(obj.getEstado())) continue;
+
+            if (obj.getTipo() != null && obj.getTipo().toLowerCase().contains(tipoBuscado)) {
                 resultado.add(obj);
             }
+
         }
         return resultado;
     }
