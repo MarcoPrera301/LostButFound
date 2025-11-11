@@ -12,6 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 public class Sistema {
@@ -98,7 +100,7 @@ public class Sistema {
             String correo = vistaUsuario.solicitarCorreo();
             String contrasena = vistaUsuario.solicitarContrasena();
 
-            boolean ok = insertarUsuarioCSV(nombre, correo, contrasena, "USUARIO");
+            boolean ok = insertarUsuarioCSV(nombre, correo, cifrarMD5(contrasena), "USUARIO");
             if (ok) 
             {
                 buscarUsuarioPorCorreoCSV(correo).ifPresent(listaUsuarios::add);
@@ -115,7 +117,7 @@ public class Sistema {
             String correo1 = vistaUsuario.solicitarCorreo();
             String contrasena1 = vistaUsuario.solicitarContrasena();
 
-            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo1, contrasena1);
+            Optional<Usuario> userOpt = autenticarUsuarioCSV(correo1, cifrarMD5(contrasena1));
             if (userOpt.isPresent()) 
             {
                 Usuario u = userOpt.get();
@@ -568,8 +570,8 @@ public class Sistema {
     // ====== Usuarios (con UsuariosCSV) ======
     public void crearAdminPorDefectoSiVacio() {
         if (!hayUsuariosCSV()) {
-            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", "1234", "ADMIN");
-            if (!ok) uiError(" No se pudo crear el admin por defecto.");
+            boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", cifrarMD5("1234"), "ADMIN");
+            if (!ok) uiError(" No se pudo crear el admin por defecto.")
         }
     }
 
@@ -905,6 +907,26 @@ public class Sistema {
             if (vistaUsuario != null) {
                 vistaUsuario.mensaje("Has ganado " + PUNTOS_REPORTE_OBJETO + " puntos. Total: " + usuarioActual.getPuntos());
             }
+        }
+    }
+ 
+    private static String cifrarMD5(String texto) //metodo para encriptacion en MD5 de las passwords
+    {
+    if (texto == null || texto.isBlank()) return "";
+    try 
+        {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(texto.getBytes(StandardCharsets.UTF_8));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) 
+            {
+                sb.append(String.format("%02x", b));
+            }
+            return sb.toString();
+        } 
+    catch (NoSuchAlgorithmException e) 
+        {
+            return texto; // devuelve texto plano si falla
         }
     }
 }
