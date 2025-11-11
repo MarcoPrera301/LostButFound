@@ -571,7 +571,7 @@ public class Sistema {
     public void crearAdminPorDefectoSiVacio() {
         if (!hayUsuariosCSV()) {
             boolean ok = insertarUsuarioCSV("Admin", "admin@uvg.edu.gt", cifrarMD5("1234"), "ADMIN");
-            if (!ok) uiError(" No se pudo crear el admin por defecto.")
+            if (!ok) uiError(" No se pudo crear el admin por defecto.");
         }
     }
 
