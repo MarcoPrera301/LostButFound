@@ -1,8 +1,12 @@
 id,descripcion,tipo,estado,fechaEncontrado,lugarEncontrado,fechaDevolucion,reportadoPor,usuarioQueReclama
-
-1,Sueter rojo adidas,ropa,sin dueño,2025-12-12,Cit 123,,gar25348@uvg.edu.gt,
+1,Sueter rojo adidas,ropa,pendiente_validacion,2025-12-12,Cit 123,,gar25348@uvg.edu.gt,kilirayo23@gmail.com
 2,Airpods estuche rojo,electronico,sin dueño,2025-12-12,Cit 532,,gar25348@uvg.edu.gt,
-3,lentes de aro azul,accesorio,perdido,2025-09-12,Golden Harvest,,gar25348@uvg.edu.gt,
+3,lentes de aro azul,accesorio,perdido,2025-09-12,Golden Harvest,,gar25348@uvg.edu.gt,1
 4,Celular samsung,electronico,perdido,2025-10-12,Cit 204,,gar25348@uvg.edu.gt,
 5,Negro,accesorio,perdido,2025-11-12,Cit 205,,admin@uvg.edu.gt,
 6,Negro,accesorio,sin dueño,2025-11-12,Cit 203,,admin@uvg.edu.gt,
+7,Zapato negro,Ropa,sin dueño,2025-11-12,Biblioteca,,admin@uvg.edu.gt,
+8,Pulsera azul,Accesorio|Ropa,perdido,2025-11-12,Biblioteca,,admin@uvg.edu.gt,
+9,pulsera azul,Accesorio,sin dueño,2025-11-13,Cit 630,,kilirayo23@gmail.com,
+10,suerte rojo adidas,Ropa,perdido,2025-11-13,en la biblioteca,,kilirayo23@gmail.com,
+11,pachon rojo nike,Utiles|Accesorio|Recipientes,sin dueño,2025-11-13,cit c115,,jp@yahoo.com,

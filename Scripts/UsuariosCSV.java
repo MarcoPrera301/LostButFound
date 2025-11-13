@@ -149,7 +149,7 @@ public class UsuariosCSV {
         return cambiado;
     }
 
-    /** ¿Hay al menos un usuario (además de la cabecera)? */
+    // Verifica que haya al menos un usuario
     public boolean hayUsuarios() {
         try (BufferedReader br = Files.newBufferedReader(rutaCSVUsuarios, StandardCharsets.UTF_8)) {
             br.readLine(); // header
