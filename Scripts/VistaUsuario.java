@@ -99,12 +99,34 @@ public class VistaUsuario
     }
 
 
-    public String filtroTipo() 
-    {
-        System.out.println("Ingrese el tipo de objeto a buscar (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros):");
-        String tipo = sc.nextLine().toLowerCase();
-        return tipo;
+public String filtroTipo() 
+{
+    System.out.println("Filtra por varias categorías usando números separados por coma.");
+    System.out.println("0 = No filtrar por tipo");
+    System.out.println("[1] Documento  [2] Electronico  [3] Accesorio  [4] Ropa  [5] Utiles  [6] Recipientes  [7] Otros");
+    System.out.print("Categorías a filtrar: ");
+
+    String linea = sc.nextLine().trim();
+
+    // Sin filtro
+    if (linea.equals("0") || linea.isEmpty()) {
+        return "";  // Sistema interpretará "sin filtro por tipo"
     }
+
+    // solo números 1–7 separados por coma
+    if (!linea.matches("^\\s*[1-7]\\s*(,\\s*[1-7]\\s*)*$")) {
+        System.out.println("Selección inválida. Usa números del 1 al 7 separados por coma (ej. 1,3,5).");
+        return filtroTipo(); // reintenta
+    }
+
+    String tipos = mapearNumerosACategorias(linea); // Ej: "Documento|Accesorio"
+    if (tipos == null || tipos.isEmpty()) {
+        System.out.println("Selección inválida. Intenta de nuevo.");
+        return filtroTipo(); // reintenta
+    }
+    return tipos;
+}
+
 
     public LocalDate filtroFecha1() {
         DateTimeFormatter DMY_STRICT = new DateTimeFormatterBuilder()
@@ -246,11 +268,31 @@ public class VistaUsuario
 
 
     public String solicitarTipoObjeto() {
-        System.out.println("Ingrese qué tipo de objeto es (Documento, Electronico, Accesorio, Ropa, Utiles, Recipientes, Otros) (o pulsa 1 para regresar):");
-        String tipo = sc.nextLine().trim().toLowerCase();  
-        if (tipo.equals("1")) return null;                  
-        return tipo;                                       
+        System.out.println("Elige qué tipo de objeto es usando números (puedes elegir más de 1, separados con coma).");
+        System.out.println("0 = Regresar");
+        System.out.println("[1] Documento  [2] Electronico  [3] Accesorio  [4] Ropa  [5] Utiles  [6] Recipientes  [7] Otros");
+        System.out.print("Categorías: ");
+
+        String linea = sc.nextLine().trim();
+
+        // Regresar al menú anterior
+        if (linea.equals("0")) return null;
+
+        // validar el patrón "1,2,3"
+        if (!linea.matches("^\\s*[1-7]\\s*(,\\s*[1-7]\\s*)*$")) {
+            System.out.println("Selección inválida. Usa números del 1 al 7 separados por coma (ej. 1,3,5)");
+            return solicitarTipoObjeto(); // reintenta
+        }
+
+        String tipos = mapearNumerosACategorias(linea); // Ej: "Documento|Accesorio"
+        if (tipos == null || tipos.isEmpty()) {
+            System.out.println("Selección inválida. Intenta de nuevo.");
+            return solicitarTipoObjeto(); // reintenta
+        }
+
+        return tipos;  
     }
+
 
 
     public String solicitarDescripcion() 
@@ -589,6 +631,30 @@ public class VistaUsuario
         System.out.println("Rol:     " + u.getRol());
         System.out.println("Puntos:  " + u.getPuntos());
     }
+
+    // Cambia la selección "1,3,5" a "Documento|Accesorio|Utiles"
+private String mapearNumerosACategorias(String linea) {
+    java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+    if (linea == null || linea.isBlank()) return "";
+
+    for (String t : linea.split(",")) {
+        String s = t.trim();
+        switch (s) {
+            case "1": set.add("Documento");   break;
+            case "2": set.add("Electronico"); break;
+            case "3": set.add("Accesorio");   break;
+            case "4": set.add("Ropa");        break;
+            case "5": set.add("Utiles");      break;
+            case "6": set.add("Recipientes"); break;
+            case "7": set.add("Otros");       break;
+            default:
+                return null; 
+        }
+    }
+
+    return String.join("|", set);  // ej: "Documento|Accesorio"
+}
+
 }
 
 

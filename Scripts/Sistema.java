@@ -125,8 +125,8 @@ public class Sistema {
                 usuarioEnSesion = u;
                 vistaUsuario.mensaje("Bienvenido, " + u.getNombre());
                 donarObjetosVencidos(); //regla de 6 meses
-                List<String> avisos = generarNotificacionesInicioSesion(u);   // NUEVO
-                if (vistaUsuario != null) vistaUsuario.mostrarNotificaciones(avisos); // NUEVO
+                List<String> avisos = generarNotificacionesInicioSesion(u);   
+                if (vistaUsuario != null) vistaUsuario.mostrarNotificaciones(avisos); 
                 login = true;
             } 
             else 
@@ -164,11 +164,11 @@ public class Sistema {
             case 2: // Búsqueda de objetos encontrados
                 switch (vistaUsuario.verFiltros()) {
                     case 1:
-                        String tipoFiltro = vistaUsuario.filtroTipo();
-                        List<Objeto> listafiltradaT = filtrarPorTipo(listaObjetos, tipoFiltro);
+                        String tiposFiltro = vistaUsuario.filtroTipo(); // ahora puede ser "Documento|Accesorio"
+                        List<Objeto> listafiltradaT = filtrarPorTipos(listaObjetos, tiposFiltro);
                         vistaUsuario.mostrarObjetos(listafiltradaT);
                         break;
-                    case 2:
+                    case 2: 
                         LocalDate fecha1 = vistaUsuario.filtroFecha1();
                         LocalDate fecha2 = vistaUsuario.filtroFecha2();
                         List<Objeto> listafiltradaF = filtrarPorFechaEncontrado(listaObjetos, fecha1, fecha2);
@@ -929,5 +929,47 @@ public class Sistema {
             return texto; // devuelve texto plano si falla
         }
     }
+
+        // Convierte "Documento|Accesorio" a  ["documento","accesorio"]
+    private java.util.Set<String> tiposASet(String cadenaTipos) {
+        java.util.LinkedHashSet<String> set = new java.util.LinkedHashSet<>();
+        if (cadenaTipos == null) return set;
+        for (String t : cadenaTipos.split("\\|")) {
+            String v = t.trim().toLowerCase();
+            if (!v.isEmpty()) set.add(v);
+        }
+        return set;
+    }
+
+    // Filtro por múltiples tipos (intersección)
+    private java.util.List<Objeto> filtrarPorTipos(java.util.List<Objeto> objetos, String tiposFiltro) {
+        java.util.List<Objeto> resultado = new java.util.ArrayList<>();
+        if (objetos == null) return resultado;
+        if (tiposFiltro == null || tiposFiltro.isBlank()) return resultado;
+
+        java.util.Set<String> filtro = tiposASet(tiposFiltro);
+        if (filtro.isEmpty()) return resultado;
+
+        for (Objeto obj : objetos) {
+            if (obj == null) continue;
+            if (!Objeto.ESTADO_ENCONTRADO.equalsIgnoreCase(obj.getEstado())) continue;
+
+            java.util.Set<String> tiposObj = tiposASet(obj.getTipo());
+            if (tiposObj.isEmpty()) continue;
+
+            boolean coincide = false;
+            for (String t : filtro) {
+                if (tiposObj.contains(t)) {
+                    coincide = true;
+                    break;
+                }
+            }
+            if (coincide) {
+                resultado.add(obj);
+            }
+        }
+        return resultado;
+    }
+
 }
 
