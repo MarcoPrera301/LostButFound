@@ -404,35 +404,50 @@ public String filtroTipo()
     private void reclamarObjetoComoUsuario() 
     {
         System.out.println("== Reclamo de Objeto ==");
-        
+
         // Mostrar objetos disponibles para reclamar
         List<Objeto> objetosDisponibles = sistema.filtrarPorEstado(
             sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_ENCONTRADO
         );
-        
+
         if (objetosDisponibles.isEmpty()) {
             System.out.println("No hay objetos disponibles para reclamar.");
             return;
         }
-        
+
         mostrarObjetos(objetosDisponibles);
-        
-        System.out.print("ID del objeto a reclamar: ");
-        int idObj = pedirNumero();
-        
+
+        System.out.print("Ingrese el ID del objeto que desea reclamar (0 para regresar al menú): ");
+        int idObj = pedirNumeroConSalida();
+
+        //Si el usuario escribió 0
+        if (idObj == -1) {
+            System.out.println("Operación cancelada por el usuario. Regresando al menú...");
+            return;
+        }
+
         Usuario usuarioActual = sistema.getUsuarioActual();
         if (usuarioActual == null) {
             System.out.println("Debe iniciar sesión para reclamar objetos.");
             return;
         }
-        
+
+        //Verificar si el ID existe antes de intentar reclamar
+        boolean existe = objetosDisponibles.stream().anyMatch(o -> o.getId() == idObj);
+        if (!existe) {
+            System.out.println("ID inexistente. Ingrese un ID válido o 0 para regresar al menú.");
+            reclamarObjetoComoUsuario(); // vuelve a intentarlo de forma recursiva (sin while)
+            return;
+        }
+
         boolean resultado = sistema.reclamarObjeto(idObj, usuarioActual);
         if (resultado) {
-            System.out.println("Reclamo enviado exitosamente.");
+            System.out.println("Reclamo enviado exitosamente. Pendiente de validación.");
         } else {
             System.out.println("No se pudo procesar el reclamo.");
         }
     }
+
 
     public void validarReclamoComoAdmin() 
     {
@@ -654,6 +669,27 @@ private String mapearNumerosACategorias(String linea) {
 
     return String.join("|", set);  // ej: "Documento|Accesorio"
 }
+
+public int pedirNumeroConSalida() {
+    try {
+        int opcion = sc.nextInt();
+        sc.nextLine(); // limpiar buffer
+
+        if (opcion == 0) {
+            return -1; // salir
+        }
+        if (opcion < 0) {
+            System.out.println("Por favor ingrese un número positivo o 0 para regresar:");
+            return pedirNumeroConSalida();
+        }
+        return opcion;
+    } catch (Exception e) {
+        sc.nextLine(); // limpiar buffer
+        System.out.println("Entrada inválida. Ingrese un número válido o 0 para regresar:");
+        return pedirNumeroConSalida();
+    }
+}
+
 
 }
 
