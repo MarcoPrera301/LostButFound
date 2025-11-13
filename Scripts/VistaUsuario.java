@@ -40,17 +40,19 @@ public class VistaUsuario
 
     public int pedirNumero()
     {
-        try{
+    try {
         int opcion = sc.nextInt();
         sc.nextLine(); // limpiar buffer
+        if (opcion <= 0) {
+            System.out.println("Entrada inválida. Por favor ingrese una opción válida.");
+            return pedirNumero(); // vuelve a pedir
+        }
         return opcion;
-        }
-        catch (Exception e)
-        {
-            sc.nextLine(); // limpiar buffer en caso de error
-            System.out.println("Entrada inválida. Por favor ingrese un número.");
-            return 0; 
-        }
+    } catch (Exception e) {
+        sc.nextLine(); // limpiar buffer
+        System.out.println("Entrada inválida. Por favor ingrese una opción válida.");
+        return pedirNumero(); // vuelve a pedir
+    }
     }
 
 
@@ -435,7 +437,7 @@ public String filtroTipo()
         //Verificar si el ID existe antes de intentar reclamar
         boolean existe = objetosDisponibles.stream().anyMatch(o -> o.getId() == idObj);
         if (!existe) {
-            System.out.println("ID inexistente. Ingrese un ID válido o 0 para regresar al menú.");
+            System.out.println("ID inexistente. Ingrese un ID válido.");
             reclamarObjetoComoUsuario(); // vuelve a intentarlo de forma recursiva (sin while)
             return;
         }
