@@ -164,10 +164,18 @@ public class Sistema {
             case 2: // Búsqueda de objetos encontrados
                 switch (vistaUsuario.verFiltros()) {
                     case 1:
-                        String tiposFiltro = vistaUsuario.filtroTipo(); // ahora puede ser "Documento|Accesorio"
+                        String tiposFiltro = vistaUsuario.filtroTipo(); // puede devolver null si el usuario pone 0
+
+                        // Si el usuario puso 0 regresa al menú de filtros
+                        if (tiposFiltro == null) {
+                            vistaUsuario.mensaje("Operación cancelada.");
+                            break; 
+                        }
+
                         List<Objeto> listafiltradaT = filtrarPorTipos(listaObjetos, tiposFiltro);
                         vistaUsuario.mostrarObjetos(listafiltradaT);
                         break;
+
                     case 2: 
                         LocalDate fecha1 = vistaUsuario.filtroFecha1();
                         LocalDate fecha2 = vistaUsuario.filtroFecha2();

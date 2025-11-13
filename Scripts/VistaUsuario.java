@@ -104,15 +104,15 @@ public class VistaUsuario
 public String filtroTipo() 
 {
     System.out.println("Filtra por varias categorías usando números separados por coma.");
-    System.out.println("0 = No filtrar por tipo");
+    System.out.println("0 = Regresar al menú de filtros");
     System.out.println("[1] Documento  [2] Electronico  [3] Accesorio  [4] Ropa  [5] Utiles  [6] Recipientes  [7] Otros");
     System.out.print("Categorías a filtrar: ");
 
     String linea = sc.nextLine().trim();
 
-    // Sin filtro
-    if (linea.equals("0") || linea.isEmpty()) {
-        return "";  // Sistema interpretará "sin filtro por tipo"
+    // 0 = regresar al menú de filtros
+    if (linea.equals("0")) {
+        return null;
     }
 
     // solo números 1–7 separados por coma
@@ -121,11 +121,13 @@ public String filtroTipo()
         return filtroTipo(); // reintenta
     }
 
-    String tipos = mapearNumerosACategorias(linea); // Ej: "Documento|Accesorio"
+    // convierte "1,3,5" a algo como "Documento|Accesorio|Utiles"
+    String tipos = mapearNumerosACategorias(linea);
     if (tipos == null || tipos.isEmpty()) {
         System.out.println("Selección inválida. Intenta de nuevo.");
         return filtroTipo(); // reintenta
     }
+
     return tipos;
 }
 
