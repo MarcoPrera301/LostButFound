@@ -455,7 +455,7 @@ public class VistaUsuario
         return opcion;
     }
 
-/** Solicita el nombre del usuario (UI) */
+    //Solicita el nombre del usuario (UI) 
     public String solicitarNombrePersona() 
     {
         System.out.print("Nombre: ");
@@ -508,7 +508,7 @@ public class VistaUsuario
                 return;
         }
 
-     // Resumen admin-only de DONADOS
+     // Resumen admin de DONADOS
         List<Objeto> donados = sistema.filtrarPorEstado(sistema.obtenerObjetosEnMemoria(), Objeto.ESTADO_DONADO);
         System.out.println("Objetos DONADOS en el sistema: " + (donados == null ? 0 : donados.size()));
 
@@ -568,7 +568,7 @@ public class VistaUsuario
         }
     }
 
-    /** Mensajes de error provenientes del sistema. */
+    //Mensajes de error provenientes del sistema.
     public void error(String mensaje) {
         System.err.println(mensaje);
     }

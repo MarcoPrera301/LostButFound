@@ -15,3 +15,4 @@ idUsuario,nombre,correo,contrasena,rol,creadoEn,puntos
 12,pepe,siu,123,USUARIO,2025-11-07,0
 13,Nicol�s Garc�a,gar25348@uvg.edu.gt,1,USUARIO,2025-11-10,30
 14,Javier Giron,gir25346@uvg.edu.gt,42629ecf8c38c5061a5c56310c45da23,USUARIO,2025-11-10,0
+15,Sebastian,sebas@uvg.edu.gt,d93591bdf7860e1e4ee2fca799911215,USUARIO,2025-11-12,0
